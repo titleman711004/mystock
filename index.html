@@ -43,8 +43,8 @@
         .chart-box { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color); padding: 15px; margin-bottom: 12px; position: relative; transition: background-color 0.3s, border-color 0.3s; }
         .master-chart-box { border: 2px solid #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.15); }
         
-        .chart-container { height: 400px; min-height: 400px; position: relative; width: 100%; }
-        .master-container { height: 480px; min-height: 480px; position: relative; width: 100%; }
+        .chart-container { height: 400px; min-height: 400px; position: relative; width: 100%; cursor: pointer; /* 讓鼠標變成手指，提示可點擊 */ }
+        .master-container { height: 480px; min-height: 480px; position: relative; width: 100%; cursor: pointer; }
 
         .note-legend { margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 12px; font-size: 13px; color: var(--text-sub); text-align: center; line-height: 1.6; }
         .screenshot-hide { opacity: 1; transition: opacity 0.2s; }
@@ -63,6 +63,7 @@
         
         select.input-field { -webkit-appearance: none; appearance: none; }
         
+        /* 檢視模式 / 編輯模式 切換控制 */
         .hidden-in-view-mode { display: block; }
         .view-mode-active .hidden-in-view-mode { display: none !important; }
         
@@ -134,7 +135,7 @@
                 </div>
                 <button onclick="toggleMasterLabelPos()" class="screenshot-hide absolute top-3 right-12 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center font-bold text-lg" title="切換 內/外">◐</button>
                 <button onclick="downloadMasterChart()" class="screenshot-hide absolute top-3 right-3 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center" title="另開高畫質圖檔">📷</button>
-                <div class="master-container"><canvas id="masterCanvas"></canvas></div>
+                <div class="master-container" title="點擊圖表切換顯示代號/名稱"><canvas id="masterCanvas"></canvas></div>
             </div>
         </div>
 
@@ -199,16 +200,18 @@
         const configKeys = ['chartConfigsV112', 'chartConfigsV111', 'chartConfigsV110'];
 
         let myAssets = loadRobustData('myAssetsV112', assetKeys, []);
-        let chartConfigs = loadRobustData('chartConfigsV112', configKeys, [{ id: Date.now(), title: '主要配置', selectedIds: [], labelPos: 'outside', labelContent: 'symbol' }]);
+        let chartConfigs = loadRobustData('chartConfigsV112', configKeys, [{ id: Date.now(), title: '主要配置', selectedIds: [], labelPos: 'inside', labelContent: 'symbol' }]);
         
-        // 確保結構完整
         chartConfigs.forEach(c => { 
             if (!c.selectedIds) c.selectedIds = [];
-            if (!c.labelContent) c.labelContent = 'symbol'; // 預設顯示代號
+            // 預設強制改為 inside，移除周圍標籤
+            if (!c.labelPos || c.labelPos === 'outside') c.labelPos = 'inside';
+            if (!c.labelContent) c.labelContent = 'symbol'; 
         });
         myAssets.forEach(a => { if(typeof a.currentPrice === 'undefined') a.currentPrice = 0; });
 
-        let masterLabelPos = localStorage.getItem('masterLabelPosV1') || 'outside';
+        // 全域 masterLabelPos 也預設 inside
+        let masterLabelPos = localStorage.getItem('masterLabelPosV1') || 'inside'; 
         let currentTheme = localStorage.getItem('appThemeV1') || 'dark';
         let isEditMode = localStorage.getItem('editModeV1') !== 'false';
         
@@ -391,6 +394,13 @@
             }
         }
 
+        // 個別圖表標籤切換
+        function toggleChartLabelContent(index) {
+            const current = chartConfigs[index].labelContent || 'symbol';
+            chartConfigs[index].labelContent = (current === 'symbol') ? 'note' : 'symbol';
+            render();
+        }
+
         function render() {
             localStorage.setItem('myAssetsV112', JSON.stringify(myAssets));
             localStorage.setItem('chartConfigsV112', JSON.stringify(chartConfigs));
@@ -491,11 +501,6 @@
                     ? `<input type="text" onchange="chartConfigs[${i}].title=this.value;render()" value="${conf.title}" class="title-input font-black text-center w-full mb-1 text-xl" style="font-family:'Noto Sans TC'; ${headerColorStyle}">`
                     : `<h3 class="font-black text-center w-full mb-1 text-xl tracking-wide" style="font-family:'Noto Sans TC'; ${headerColorStyle}">${conf.title}</h3>`;
 
-                // 決定按鈕樣式與狀態
-                const currentLabelMode = conf.labelContent || 'symbol';
-                const btnLabel = currentLabelMode === 'symbol' ? 'Aa' : '123';
-                const btnTitle = currentLabelMode === 'symbol' ? '目前顯示代號，點擊切換為名稱' : '目前顯示名稱，點擊切換為代號';
-
                 chartsHTML += `
                     <div class="chart-box" id="chart-box-${i}">
                         ${headerHtml}
@@ -512,13 +517,10 @@
                                 <span class="text-rose-400 font-black text-xl font-num">${groupYield}%</span>
                             </div>
                         </div>
-                        <button onclick="toggleChartLabelContent(${i})" class="screenshot-hide absolute top-3 right-24 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm" title="${btnTitle}">
-                            ${btnLabel}
-                        </button>
                         <button onclick="toggleChartLabelPos(${i})" class="screenshot-hide absolute top-3 right-12 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center font-bold text-lg" title="切換 內/外">◐</button>
                         <button onclick="downloadChart(${i})" class="screenshot-hide absolute top-3 right-2 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center" title="另開高畫質圖檔">📷</button>
                         <button onclick="deleteChart(${i})" class="screenshot-hide absolute top-3 left-3 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center" title="刪除分組">✕</button>
-                        <div class="chart-container"><canvas id="canvas-${i}"></canvas></div>
+                        <div class="chart-container" title="點擊圖表切換顯示 代號 / 名稱"><canvas id="canvas-${i}"></canvas></div>
                         <div class="show-in-view-mode mt-4 px-2 bg-slate-800/20 rounded-lg">
                             ${legendItems || '<div class="text-xs text-slate-600 text-center py-2">無資料</div>'}
                         </div>
@@ -604,6 +606,8 @@
                     estAnnual = shares * 1000 * amt * freq;
                 }
 
+                const displayName = item.note ? `${item.symbol} ${item.note}` : item.symbol;
+
                 listHTML += `
                     <div class="compact-row" data-id="${item.id}">
                         <div class="drag-handle">☰</div>
@@ -644,9 +648,7 @@
                         const netCost = (s.avgPrice * s.shares * 1000) - (s.divRec || 0) - (s.gainRec || 0);
                         dData.push(netCost > 0 ? netCost : 1);
                         
-                        // 這裡決定顯示什麼字
                         let labelText = s.symbol;
-                        // 如果該圖表被設定為顯示 Note，且 Note 有填寫，就顯示 Note
                         if (conf.labelContent === 'note' && s.note) {
                             labelText = s.note;
                         }
@@ -663,7 +665,9 @@
                     type: 'pie',
                     data: { labels: dLabels, datasets: [{ data: dData, backgroundColor: dColors, borderWidth: 1, borderColor: chartBorderColor }]},
                     options: {
+                        onClick: (e) => { toggleChartLabelContent(i); }, // 點擊切換
                         devicePixelRatio: 3, responsive: true, maintainAspectRatio: false, 
+                        radius: isMobile ? '50%' : '90%', 
                         layout: { padding: (currentPos === 'outside') ? (window.innerWidth < 480 ? 60 : 40) : 20 },
                         plugins: {
                             legend: { display: false },
@@ -691,13 +695,6 @@
         function toggleMasterLabelPos() { masterLabelPos = (masterLabelPos === 'outside') ? 'inside' : 'outside'; render(); }
         function toggleChartLabelPos(index) { const current = chartConfigs[index].labelPos || 'outside'; chartConfigs[index].labelPos = (current === 'outside') ? 'inside' : 'outside'; render(); }
         
-        // 新增：個別圖表標籤內容切換 (代號/中文)
-        function toggleChartLabelContent(index) {
-            const current = chartConfigs[index].labelContent || 'symbol';
-            chartConfigs[index].labelContent = (current === 'symbol') ? 'note' : 'symbol';
-            render();
-        }
-
         function downloadMasterChart() { const el = document.getElementById('masterChartBox'); const total = document.getElementById('grandTotal').innerText; captureAndOpenImage(el, `資產總覽_總值${total}萬`); }
         function downloadChart(index) { const el = document.getElementById(`chart-box-${index}`); const title = chartConfigs[index].title || 'chart'; const val = (el.innerText.match(/市值：([\d\.]+) 萬/) || [])[1] || ''; captureAndOpenImage(el, `${title}_市值${val}萬`); }
 
@@ -787,4 +784,3 @@
     </script>
 </body>
 </html>
-
