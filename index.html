@@ -1,9 +1,16 @@
+沒問題！這是一個非常精細的客製化需求。我完全理解您的意思了：
+ * 移除全域按鈕：上方的「🔤 顯示...」按鈕（外圍的設定）已經移除。
+ * 個別控制：現在每一個圓餅圖的右上角都有一個獨立的 「Aa」 按鈕。
+   * 點擊 Aa，該圖表上的文字就會在 「代號 (2330)」 與 「中文 (台積電)」 之間切換。
+   * 每個圖表互不影響（例如：A圖顯示代號，B圖顯示中文）。
+ * 保留對照表：圓餅圖下方的詳細清單（顏色/代號/中文）依然存在，方便您對照。
+請複製這份 最終修正版 代碼：
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stock Dashboard Pro</title>
+    <title>Stock Dashboard Pro (Per-Chart Toggle)</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -63,7 +70,6 @@
         
         select.input-field { -webkit-appearance: none; appearance: none; }
         
-        /* 檢視模式 / 編輯模式 切換控制 */
         .hidden-in-view-mode { display: block; }
         .view-mode-active .hidden-in-view-mode { display: none !important; }
         
@@ -96,9 +102,6 @@
                     <p class="text-[10px] text-white tracking-widest font-medium mr-1">Designed by Titleman</p>
                     <button onclick="cycleTheme()" class="text-xs px-2 py-0.5 rounded border border-slate-600 bg-slate-800 text-slate-300 hover:text-white transition-all whitespace-nowrap font-medium hidden-in-view-mode">
                         <span id="themeName">預設</span>
-                    </button>
-                    <button onclick="toggleLabelMode()" id="labelModeBtn" class="text-xs px-2 py-0.5 rounded border border-pink-600 bg-pink-900 text-pink-200 hover:text-white transition-all whitespace-nowrap font-medium">
-                        🔤 圖表標籤：代號
                     </button>
                     <button onclick="toggleEditMode()" id="modeBtn" class="text-xs px-2 py-0.5 rounded border border-blue-600 bg-blue-900 text-blue-200 hover:text-white transition-all whitespace-nowrap font-medium">
                         ✏️ 編輯
@@ -203,15 +206,18 @@
         const configKeys = ['chartConfigsV112', 'chartConfigsV111', 'chartConfigsV110'];
 
         let myAssets = loadRobustData('myAssetsV112', assetKeys, []);
-        let chartConfigs = loadRobustData('chartConfigsV112', configKeys, [{ id: Date.now(), title: '主要配置', selectedIds: [], labelPos: 'outside' }]);
+        let chartConfigs = loadRobustData('chartConfigsV112', configKeys, [{ id: Date.now(), title: '主要配置', selectedIds: [], labelPos: 'outside', labelContent: 'symbol' }]);
         
-        chartConfigs.forEach(c => { if (!c.selectedIds) c.selectedIds = []; });
+        // 確保結構完整
+        chartConfigs.forEach(c => { 
+            if (!c.selectedIds) c.selectedIds = [];
+            if (!c.labelContent) c.labelContent = 'symbol'; // 預設顯示代號
+        });
         myAssets.forEach(a => { if(typeof a.currentPrice === 'undefined') a.currentPrice = 0; });
 
         let masterLabelPos = localStorage.getItem('masterLabelPosV1') || 'outside';
         let currentTheme = localStorage.getItem('appThemeV1') || 'dark';
         let isEditMode = localStorage.getItem('editModeV1') !== 'false';
-        let labelDisplayMode = localStorage.getItem('labelDisplayModeV1') || 'symbol'; // 'symbol' or 'note'
         
         let chartInstances = {};
         let masterChartInstance = null;
@@ -381,40 +387,14 @@
 
         function applyEditMode() {
             const btn = document.getElementById('modeBtn');
-            const lblBtn = document.getElementById('labelModeBtn');
             if (isEditMode) {
                 document.body.classList.remove('view-mode-active');
                 btn.innerHTML = '返回';
                 btn.classList.replace('text-white', 'text-blue-200');
-                lblBtn.classList.add('hidden-in-view-mode');
             } else {
                 document.body.classList.add('view-mode-active');
                 btn.innerHTML = '編輯';
                 btn.classList.replace('text-blue-200', 'text-white');
-                lblBtn.classList.remove('hidden-in-view-mode');
-            }
-        }
-
-        // 切換圓餅圖標籤顯示模式 (代號 vs 中文)
-        function toggleLabelMode() {
-            labelDisplayMode = (labelDisplayMode === 'symbol') ? 'note' : 'symbol';
-            localStorage.setItem('labelDisplayModeV1', labelDisplayMode);
-            updateLabelModeBtn();
-            render();
-        }
-
-        function updateLabelModeBtn() {
-            const btn = document.getElementById('labelModeBtn');
-            if (labelDisplayMode === 'note') {
-                btn.innerHTML = '🔤 圖表標籤：中文';
-                btn.classList.replace('border-pink-600', 'border-teal-500');
-                btn.classList.replace('bg-pink-900', 'bg-teal-900');
-                btn.classList.replace('text-pink-200', 'text-teal-200');
-            } else {
-                btn.innerHTML = '🔤 圖表標籤：代號';
-                btn.classList.replace('border-teal-500', 'border-pink-600');
-                btn.classList.replace('bg-teal-900', 'bg-pink-900');
-                btn.classList.replace('text-teal-200', 'text-pink-200');
             }
         }
 
@@ -425,7 +405,6 @@
 
             if(!document.documentElement.getAttribute('data-theme')) applyTheme(currentTheme);
             applyEditMode(); 
-            updateLabelModeBtn();
 
             const chartBorderColor = getThemeColor('--chart-border');
             const textColor = getThemeColor('--text-main');
@@ -492,7 +471,6 @@
                         }
                         groupCostBasis += (shares * 1000 * avgPrice);
 
-                        // 建立下方對照表 (固定顯示：顏色 符號 中文)
                         const stockColor = getItemColor(myAssets.findIndex(ma => ma.id == sid));
                         const noteText = a.note ? a.note : '-';
                         legendItems += `
@@ -520,6 +498,11 @@
                     ? `<input type="text" onchange="chartConfigs[${i}].title=this.value;render()" value="${conf.title}" class="title-input font-black text-center w-full mb-1 text-xl" style="font-family:'Noto Sans TC'; ${headerColorStyle}">`
                     : `<h3 class="font-black text-center w-full mb-1 text-xl tracking-wide" style="font-family:'Noto Sans TC'; ${headerColorStyle}">${conf.title}</h3>`;
 
+                // 決定按鈕樣式與狀態
+                const currentLabelMode = conf.labelContent || 'symbol';
+                const btnLabel = currentLabelMode === 'symbol' ? 'Aa' : '123';
+                const btnTitle = currentLabelMode === 'symbol' ? '目前顯示代號，點擊切換為名稱' : '目前顯示名稱，點擊切換為代號';
+
                 chartsHTML += `
                     <div class="chart-box" id="chart-box-${i}">
                         ${headerHtml}
@@ -536,6 +519,9 @@
                                 <span class="text-rose-400 font-black text-xl font-num">${groupYield}%</span>
                             </div>
                         </div>
+                        <button onclick="toggleChartLabelContent(${i})" class="screenshot-hide absolute top-3 right-24 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm" title="${btnTitle}">
+                            ${btnLabel}
+                        </button>
                         <button onclick="toggleChartLabelPos(${i})" class="screenshot-hide absolute top-3 right-12 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center font-bold text-lg" title="切換 內/外">◐</button>
                         <button onclick="downloadChart(${i})" class="screenshot-hide absolute top-3 right-2 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center" title="另開高畫質圖檔">📷</button>
                         <button onclick="deleteChart(${i})" class="screenshot-hide absolute top-3 left-3 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center" title="刪除分組">✕</button>
@@ -625,8 +611,6 @@
                     estAnnual = shares * 1000 * amt * freq;
                 }
 
-                const displayName = item.note ? `${item.symbol} ${item.note}` : item.symbol;
-
                 listHTML += `
                     <div class="compact-row" data-id="${item.id}">
                         <div class="drag-handle">☰</div>
@@ -667,12 +651,12 @@
                         const netCost = (s.avgPrice * s.shares * 1000) - (s.divRec || 0) - (s.gainRec || 0);
                         dData.push(netCost > 0 ? netCost : 1);
                         
-                        // 修正：依據按鈕決定圓餅圖顯示的文字 (單一顯示)
+                        // 這裡決定顯示什麼字
                         let labelText = s.symbol;
-                        if (labelDisplayMode === 'note' && s.note) {
-                            labelText = s.note; // 只顯示中文
+                        // 如果該圖表被設定為顯示 Note，且 Note 有填寫，就顯示 Note
+                        if (conf.labelContent === 'note' && s.note) {
+                            labelText = s.note;
                         }
-                        // 如果沒填中文，還是會顯示代號，確保不留白
                         
                         dLabels.push(labelText);
                         dShares.push(s.shares); 
@@ -714,6 +698,13 @@
         function toggleMasterLabelPos() { masterLabelPos = (masterLabelPos === 'outside') ? 'inside' : 'outside'; render(); }
         function toggleChartLabelPos(index) { const current = chartConfigs[index].labelPos || 'outside'; chartConfigs[index].labelPos = (current === 'outside') ? 'inside' : 'outside'; render(); }
         
+        // 新增：個別圖表標籤內容切換 (代號/中文)
+        function toggleChartLabelContent(index) {
+            const current = chartConfigs[index].labelContent || 'symbol';
+            chartConfigs[index].labelContent = (current === 'symbol') ? 'note' : 'symbol';
+            render();
+        }
+
         function downloadMasterChart() { const el = document.getElementById('masterChartBox'); const total = document.getElementById('grandTotal').innerText; captureAndOpenImage(el, `資產總覽_總值${total}萬`); }
         function downloadChart(index) { const el = document.getElementById(`chart-box-${index}`); const title = chartConfigs[index].title || 'chart'; const val = (el.innerText.match(/市值：([\d\.]+) 萬/) || [])[1] || ''; captureAndOpenImage(el, `${title}_市值${val}萬`); }
 
@@ -803,3 +794,4 @@
     </script>
 </body>
 </html>
+
