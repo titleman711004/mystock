@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stock Dashboard Pro (Label Switch)</title>
+    <title>Stock Dashboard Pro (Final Fix)</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -67,7 +67,7 @@
         .hidden-in-view-mode { display: block; }
         .view-mode-active .hidden-in-view-mode { display: none !important; }
         
-        /* 檢視模式專用顯示 */
+        /* 檢視模式專用顯示 (下方對照表) */
         .show-in-view-mode { display: none; }
         .view-mode-active .show-in-view-mode { display: block !important; }
 
@@ -98,7 +98,7 @@
                         <span id="themeName">預設</span>
                     </button>
                     <button onclick="toggleLabelMode()" id="labelModeBtn" class="text-xs px-2 py-0.5 rounded border border-pink-600 bg-pink-900 text-pink-200 hover:text-white transition-all whitespace-nowrap font-medium">
-                        🔤 顯示：代號
+                        🔤 圖表標籤：代號
                     </button>
                     <button onclick="toggleEditMode()" id="modeBtn" class="text-xs px-2 py-0.5 rounded border border-blue-600 bg-blue-900 text-blue-200 hover:text-white transition-all whitespace-nowrap font-medium">
                         ✏️ 編輯
@@ -395,7 +395,7 @@
             }
         }
 
-        // 新增：切換標籤顯示模式
+        // 切換圓餅圖標籤顯示模式 (代號 vs 中文)
         function toggleLabelMode() {
             labelDisplayMode = (labelDisplayMode === 'symbol') ? 'note' : 'symbol';
             localStorage.setItem('labelDisplayModeV1', labelDisplayMode);
@@ -406,12 +406,12 @@
         function updateLabelModeBtn() {
             const btn = document.getElementById('labelModeBtn');
             if (labelDisplayMode === 'note') {
-                btn.innerHTML = '🔤 顯示：名稱';
+                btn.innerHTML = '🔤 圖表標籤：中文';
                 btn.classList.replace('border-pink-600', 'border-teal-500');
                 btn.classList.replace('bg-pink-900', 'bg-teal-900');
                 btn.classList.replace('text-pink-200', 'text-teal-200');
             } else {
-                btn.innerHTML = '🔤 顯示：代號';
+                btn.innerHTML = '🔤 圖表標籤：代號';
                 btn.classList.replace('border-teal-500', 'border-pink-600');
                 btn.classList.replace('bg-teal-900', 'bg-pink-900');
                 btn.classList.replace('text-teal-200', 'text-pink-200');
@@ -474,7 +474,7 @@
                 let groupTotal = 0;
                 let groupAnnualDiv = 0;
                 let groupCostBasis = 0;
-                let legendItems = ''; // 檢視模式清單
+                let legendItems = '';
 
                 conf.selectedIds.forEach(sid => {
                     const a = myAssets.find(item => item.id == sid);
@@ -492,7 +492,7 @@
                         }
                         groupCostBasis += (shares * 1000 * avgPrice);
 
-                        // 建立檢視模式對照表
+                        // 建立下方對照表 (固定顯示：顏色 符號 中文)
                         const stockColor = getItemColor(myAssets.findIndex(ma => ma.id == sid));
                         const noteText = a.note ? a.note : '-';
                         legendItems += `
@@ -667,13 +667,14 @@
                         const netCost = (s.avgPrice * s.shares * 1000) - (s.divRec || 0) - (s.gainRec || 0);
                         dData.push(netCost > 0 ? netCost : 1);
                         
-                        // 修正：依據使用者選擇 (labelDisplayMode) 決定圓餅圖顯示文字
+                        // 修正：依據按鈕決定圓餅圖顯示的文字 (單一顯示)
                         let labelText = s.symbol;
                         if (labelDisplayMode === 'note' && s.note) {
-                            labelText = s.note;
+                            labelText = s.note; // 只顯示中文
                         }
-                        dLabels.push(labelText);
+                        // 如果沒填中文，還是會顯示代號，確保不留白
                         
+                        dLabels.push(labelText);
                         dShares.push(s.shares); 
                         dColors.push(getItemColor(idx)); 
                         dFontSizes.push(s.fontSize || 12);
