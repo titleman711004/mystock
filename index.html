@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stock Dashboard Pro (Safe)</title>
+    <title>Stock Dashboard Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -54,30 +54,23 @@
         .btn-icon { background: var(--btn-bg); color: var(--btn-text); border: 1px solid var(--border-color); }
         .btn-icon:hover { color: var(--text-main); border-color: var(--text-main); }
         
-        /* 載入動畫 */
         #loadingOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85); z-index: 9999;
             display: none; justify-content: center; align-items: center; flex-direction: column;
         }
-        .spinner {
-            width: 40px; height: 40px; border: 4px solid #3b82f6; border-top-color: transparent; border-radius: 50%;
-            animation: spin 1s linear infinite; margin-bottom: 15px;
-        }
+        .spinner { width: 40px; height: 40px; border: 4px solid #3b82f6; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
         @keyframes spin { to { transform: rotate(360deg); } }
         
-        /* 還原資料面板 */
         #importModal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); z-index: 9998;
             display: none; justify-content: center; align-items: center; flex-direction: column; padding: 20px;
         }
 
-        /* 價格標籤樣式 */
-        .up-trend { color: #ef4444; } /* 台股紅漲 */
-        .down-trend { color: #10b981; } /* 台股綠跌 */
+        .up-trend { color: #ef4444; } 
+        .down-trend { color: #10b981; } 
         .price-display { font-family: 'Roboto', sans-serif; font-weight: bold; }
-        .label-sm { font-size: 10px; color: #64748b; margin-right: 4px; }
     </style>
 </head>
 <body class="p-3">
@@ -89,8 +82,10 @@
 
     <div id="importModal">
         <h3 class="text-white font-bold text-xl mb-4">還原備份資料</h3>
-        <p class="text-slate-400 text-sm mb-2">請將備份代碼完整貼在下方 (資料僅存於本地)：</p>
-        <textarea id="importTextarea" class="w-full max-w-2xl h-64 bg-slate-800 text-white p-4 rounded-xl border border-slate-600 mb-6 text-xs font-mono focus:outline-none focus:border-blue-500" placeholder="在此貼上代碼..."></textarea>
+        
+        <p class="text-slate-400 text-xs mb-2">請確保代碼開頭為 <span class="text-yellow-400 font-mono">JTdC</span>，不是 JTNB</p>
+        <textarea id="importTextarea" class="w-full max-w-2xl h-48 bg-slate-800 text-white p-4 rounded-xl border border-slate-600 mb-4 text-xs font-mono focus:outline-none focus:border-blue-500" placeholder="在此貼上代碼..."></textarea>
+        
         <div class="flex gap-4 w-full max-w-2xl">
             <button onclick="confirmImport()" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-lg font-bold transition">確認還原</button>
             <button onclick="closeImportModal()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-lg font-bold transition">取消</button>
@@ -162,7 +157,7 @@
     </div>
     
     <footer class="text-center text-slate-600 text-[10px] mt-8 py-6 border-t border-slate-800 tracking-wider">
-        Copyright © Titleman | Privacy Version
+        Copyright © Titleman | Manual Import
     </footer>
     
     <script>
@@ -560,8 +555,9 @@
         function openImportModal() { document.getElementById('importModal').style.display = 'flex'; }
         function closeImportModal() { document.getElementById('importModal').style.display = 'none'; document.getElementById('importTextarea').value = ''; }
         function confirmImport() {
-            // 處理掉前後與內容中可能的額外換行與空格
-            const c = document.getElementById('importTextarea').value.replace(/\s/g, '');
+            // 自動移除所有空白與換行，防止格式錯誤
+            const raw = document.getElementById('importTextarea').value;
+            const c = raw.replace(/\s/g, ''); 
             if(c) { 
                 try { 
                     const d = JSON.parse(decodeURIComponent(atob(c))); 
@@ -572,7 +568,12 @@
                     alert("✅ 還原成功！");
                 } catch(e){ 
                     console.error(e);
-                    alert("❌ 代碼格式錯誤，請確保代碼完整"); 
+                    // 顯示更詳細的錯誤提示
+                    if (raw.startsWith("JTNB")) {
+                        alert("❌ 代碼錯誤：您似乎貼到了舊的錯誤代碼 (JTNB 開頭)。請重新複製本次提供的代碼 (JTdC 開頭)。");
+                    } else {
+                        alert("❌ 代碼格式錯誤，請確認您已「完整複製」所有文字。"); 
+                    }
                 } 
             }
         }
