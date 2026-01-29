@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stock Dashboard Pro (Connected)</title>
+    <title>Stock Dashboard Pro (Hybrid Name)</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Roboto:wght@500;700;900&display=swap" rel="stylesheet">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
@@ -23,6 +23,7 @@
             --tech-line: #06b6d4; --tech-text-pct: #06b6d4;
             --btn-bg: #1e293b; --btn-text: #94a3b8;
             --font-main: 'Noto Sans TC', sans-serif;
+            --font-num: 'Roboto', sans-serif;
         }
         [data-theme="oled"] { --bg-body: #000000; --bg-card: #121212; --bg-input: #262626; --border-color: #333333; --text-main: #e5e5e5; --text-sub: #a3a3a3; --chart-border: #000000; --input-text: #e5e5e5; --row-bg: #0a0a0a; --row-border: #262626; --tech-line: #22d3ee; --tech-text-pct: #22d3ee; --btn-bg: #171717; --btn-text: #a3a3a3; }
         [data-theme="tiffany"] { --bg-body: #042f2e; --bg-card: #115e59; --bg-input: #134e4a; --border-color: #2dd4bf; --text-main: #f0fdfa; --text-sub: #99f6e4; --chart-border: #042f2e; --input-text: #ccfbf1; --row-bg: #022c22; --row-border: #115e59; --tech-line: #5eead4; --tech-text-pct: #5eead4; --btn-bg: #134e4a; --btn-text: #99f6e4; }
@@ -66,9 +67,11 @@
         .title-input { border: none; border-bottom: 1px dashed var(--border-color); border-radius: 0; background: transparent; }
         .title-input:focus { border-bottom: 1px solid var(--text-main); outline: none; }
 
-        /* 損益顏色 */
-        .text-gain { color: #f87171; } /* 紅色 (台股漲) */
-        .text-loss { color: #4ade80; } /* 綠色 (台股跌) */
+        .text-gain { color: #f87171; } 
+        .text-loss { color: #4ade80; }
+        
+        /* 讓備註顯示更顯眼 */
+        .stock-name-display { font-size: 14px; font-weight: 500; color: var(--text-sub); margin-left: 6px; }
     </style>
 </head>
 <body class="p-3">
@@ -109,24 +112,22 @@
             <div class="chart-box master-chart-box" id="masterChartBox">
                 <h3 class="text-center text-blue-400 font-bold text-xl mb-1 tracking-widest">資產配置總覽</h3>
                 <div class="text-center text-emerald-500 text-m mb-3 font-mono tracking-wider font-medium">
-                    總資產 ：<span id="grandTotal" class="text-red-400 font-black text-2xl">0</span> 萬
+                    總資產 ：<span id="grandTotal" class="text-red-400 font-black text-2xl font-num">0</span> 萬
                 </div>
-                
                 <div class="grid grid-cols-3 gap-2 mt-2 mb-2 px-2 max-w-2xl mx-auto">
                     <div class="text-center p-2 bg-slate-800/50 rounded-lg border border-slate-700/50 backdrop-blur-sm">
                         <div class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">預估年息</div>
-                        <div class="text-lg font-black text-yellow-400 tracking-tight whitespace-nowrap">$ <span id="totalAnnualDiv">0</span></div>
+                        <div class="text-lg font-black text-yellow-400 tracking-tight whitespace-nowrap font-num">$ <span id="totalAnnualDiv">0</span></div>
                     </div>
                     <div class="text-center p-2 bg-slate-800/50 rounded-lg border border-slate-700/50 backdrop-blur-sm">
                         <div class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">月均被動</div>
-                        <div class="text-lg font-black text-emerald-400 tracking-tight whitespace-nowrap">$ <span id="totalMonthlyDiv">0</span></div>
+                        <div class="text-lg font-black text-emerald-400 tracking-tight whitespace-nowrap font-num">$ <span id="totalMonthlyDiv">0</span></div>
                     </div>
                     <div class="text-center p-2 bg-slate-800/50 rounded-lg border border-slate-700/50 backdrop-blur-sm">
                         <div class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">總殖利率</div>
-                        <div class="text-lg font-black text-rose-400 tracking-tight whitespace-nowrap"><span id="portfolioYield">0.0</span>%</div>
+                        <div class="text-lg font-black text-rose-400 tracking-tight whitespace-nowrap font-num"><span id="portfolioYield">0.0</span>%</div>
                     </div>
                 </div>
-
                 <button onclick="toggleMasterLabelPos()" class="screenshot-hide absolute top-3 right-12 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center font-bold text-lg" title="切換 內/外">◐</button>
                 <button onclick="downloadMasterChart()" class="screenshot-hide absolute top-3 right-3 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center" title="另開高畫質圖檔">📷</button>
                 <div class="master-container"><canvas id="masterCanvas"></canvas></div>
@@ -138,13 +139,11 @@
         <div id="inputArea" class="input-card shadow-2xl hidden-in-view-mode">
             <input type="hidden" id="editId" value="">
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 mb-4">
-                <div class="col-span-1"><label class="text-[10px] text-slate-400 mb-1 block font-medium">股票代號</label><input id="symbol" class="input-field font-bold tracking-wide"></div>
-                <div class="col-span-1"><label class="text-[10px] text-blue-400 mb-1 block font-medium">文字大小</label><input type="number" id="fontSize" class="input-field" value="12"></div>
-                <div class="col-span-1"><label class="text-[10px] text-slate-400 mb-1 block font-medium">張數</label><input type="number" id="shares" class="input-field" step="0.001"></div>
-                <div class="col-span-1"><label class="text-[10px] text-slate-400 mb-1 block font-medium">買入均價</label><input type="number" id="avgPrice" class="input-field"></div>
-                
-                <div class="col-span-1"><label class="text-[10px] text-amber-400 mb-1 block font-medium">目前股價</label><input type="number" id="currentPrice" class="input-field" placeholder="可自動抓取"></div>
-
+                <div class="col-span-1"><label class="text-[10px] text-slate-400 mb-1 block font-medium">股票代號 (限數字)</label><input id="symbol" class="input-field font-bold tracking-wide font-num" placeholder="例如 2330"></div>
+                <div class="col-span-1"><label class="text-[10px] text-blue-400 mb-1 block font-medium">文字大小</label><input type="number" id="fontSize" class="input-field font-num" value="12"></div>
+                <div class="col-span-1"><label class="text-[10px] text-slate-400 mb-1 block font-medium">張數</label><input type="number" id="shares" class="input-field font-num" step="0.001"></div>
+                <div class="col-span-1"><label class="text-[10px] text-slate-400 mb-1 block font-medium">買入均價</label><input type="number" id="avgPrice" class="input-field font-num"></div>
+                <div class="col-span-1"><label class="text-[10px] text-amber-400 mb-1 block font-medium">目前股價</label><input type="number" id="currentPrice" class="input-field font-num" placeholder="自動抓取"></div>
                 <div class="col-span-1"><label class="text-[10px] text-yellow-400 mb-1 block font-medium">配息頻率</label><select id="divFreq" class="input-field"><option value="1">年配 (1次/年)</option><option value="2">半年配 (2次/年)</option><option value="4">季配 (4次/年)</option><option value="12">月配 (12次/年)</option><option value="0">無配息</option></select></div>
                 <div class="col-span-1">
                     <div class="flex justify-between items-center mb-1">
@@ -154,11 +153,11 @@
                             <span class="text-[9px] text-slate-400 select-none font-medium">併月均</span>
                         </label>
                     </div>
-                    <input type="number" id="divAmt" class="input-field" placeholder="每股金額" step="0.01">
+                    <input type="number" id="divAmt" class="input-field font-num" placeholder="每股金額" step="0.01">
                 </div>
-                <div class="col-span-1"><label class="text-[10px] text-emerald-400 mb-1 block font-medium">已領息(總額)</label><input type="number" id="divRec" value="0" class="input-field"></div>
-                <div class="col-span-1"><label class="text-[10px] text-orange-400 mb-1 block font-medium">已獲利(總額)</label><input type="number" id="gainRec" value="0" class="input-field"></div>
-                <div class="col-span-2 md:col-span-4 lg:col-span-7"><label class="text-[10px] text-yellow-500 mb-1 block font-medium">備註</label><input id="note" class="input-field"></div>
+                <div class="col-span-1"><label class="text-[10px] text-emerald-400 mb-1 block font-medium">已領息(總額)</label><input type="number" id="divRec" value="0" class="input-field font-num"></div>
+                <div class="col-span-1"><label class="text-[10px] text-orange-400 mb-1 block font-medium">已獲利(總額)</label><input type="number" id="gainRec" value="0" class="input-field font-num"></div>
+                <div class="col-span-2 md:col-span-4 lg:col-span-7"><label class="text-[10px] text-yellow-500 mb-1 block font-medium">中文名稱 / 備註</label><input id="note" class="input-field" placeholder="例如 台積電"></div>
             </div>
             <button onclick="saveStock()" class="w-full bg-blue-600 py-4 rounded-xl font-black text-xl active:scale-95 transition-all tracking-widest shadow-lg">儲存並刷新</button>
         </div>
@@ -176,7 +175,6 @@
     </footer>
     
     <script>
-        // ⚠️ 您的後端設定 (已整合)
         const VERCEL_URL = "https://my-stock-api-blond.vercel.app"; 
         const RENDER_URL = "https://my-stock-api-g3bz.onrender.com";
 
@@ -215,39 +213,30 @@
         function getItemColor(index) { return uniquePalette[index % uniquePalette.length]; }
         function getThemeColor(varName) { return getComputedStyle(document.documentElement).getPropertyValue(varName).trim(); }
 
-        // --- 核心：API 連線邏輯 ---
         async function fetchRace(endpoint) {
             const controller = new AbortController();
             const signal = controller.signal;
-            // 嘗試 Vercel
             const vercelPromise = fetch(`${VERCEL_URL}${endpoint}`, { signal }).then(res => { if (!res.ok) throw new Error("Vercel error"); return res.json(); });
-            // 嘗試 Render (備援)
             const startRender = () => fetch(`${RENDER_URL}${endpoint}`, { signal }).then(res => { if (!res.ok) throw new Error("Render error"); return res.json(); });
-            // 延遲啟動 Render (避免 Vercel 正常時浪費資源)
             const delayedRenderPromise = new Promise((resolve, reject) => {
                 setTimeout(() => { startRender().then(resolve).catch(reject); }, 1500); 
             });
-
-            try {
-                return await Promise.any([vercelPromise, delayedRenderPromise]);
-            } catch (error) {
-                // 如果兩者都失敗，強制再試一次 Render
-                return await startRender();
-            }
+            try { return await Promise.any([vercelPromise, delayedRenderPromise]); } 
+            catch (error) { return await startRender(); }
         }
 
         async function updateAllPrices() {
             const btn = document.getElementById('loadingOverlay');
             const txt = document.getElementById('loadingText');
             btn.style.display = 'flex';
-            txt.innerText = "連線伺服器中... (若 Render 休眠約需 50 秒)";
+            txt.innerText = "正在連線伺服器，可能需要 30-60 秒 (若 Render 正在喚醒)...";
             
             let updatedCount = 0;
             const uniqueSymbols = [...new Set(myAssets.map(a => a.symbol))];
             
             for (let i = 0; i < uniqueSymbols.length; i++) {
                 const sym = uniqueSymbols[i];
-                if(!sym) continue;
+                if(!sym || isNaN(sym)) continue; // 跳過非數字代號
                 txt.innerText = `更新中 (${i+1}/${uniqueSymbols.length}): ${sym}`;
                 try {
                     const data = await fetchRace(`/dividend/${sym}`);
@@ -264,7 +253,7 @@
             
             btn.style.display = 'none';
             render();
-            alert(`更新完成！共更新 ${updatedCount} 檔股票現價。`);
+            alert(`更新完成！共更新 ${updatedCount} 檔股票現價。\n(如果失敗請檢查代號是否為純數字)`);
         }
 
         const techLabelsPlugin = {
@@ -351,7 +340,7 @@
                     ctx.shadowBlur = 4;
                     const textPadding = 8;
                     ctx.fillText(l.text, endX + (l.isRight ? textPadding : -textPadding), l.finalY - 8);
-                    ctx.font = isMobile ? '500 9px "Noto Sans TC", sans-serif' : '500 12px "Noto Sans TC", sans-serif';
+                    ctx.font = isMobile ? '500 9px "Roboto", sans-serif' : '500 12px "Roboto", sans-serif';
                     ctx.fillStyle = pctColor;
                     ctx.fillText(l.pct, endX + (l.isRight ? textPadding : -textPadding), l.finalY + 8);
                     ctx.restore();
@@ -481,30 +470,26 @@
                     ? `<input type="text" onchange="chartConfigs[${i}].title=this.value;render()" value="${conf.title}" class="title-input font-black text-center w-full mb-1 text-xl" style="font-family:'Noto Sans TC'; ${headerColorStyle}">`
                     : `<h3 class="font-black text-center w-full mb-1 text-xl tracking-wide" style="font-family:'Noto Sans TC'; ${headerColorStyle}">${conf.title}</h3>`;
 
-                const noteItems = conf.selectedIds.map(sid => myAssets.find(a => a.id == sid)).filter(a => a && a.note);
-                let notesHtml = noteItems.map(a => `<div><span class="text-blue-400 font-bold">${a.symbol}</span>：${a.note}</div>`).join('');
-
                 chartsHTML += `
                     <div class="chart-box" id="chart-box-${i}">
                         ${headerHtml}
                         <div class="text-center text-slate-500 text-xs mb-2 font-mono tracking-wider font-medium">
-                            市值：<span class="text-emerald-400 font-black text-base">${totalWan}</span> 萬
+                            市值：<span class="text-emerald-400 font-black text-base font-num">${totalWan}</span> 萬
                         </div>
                         <div class="flex justify-center gap-3 mb-3">
                             <div class="px-3 py-2 bg-slate-800/50 rounded border border-slate-700/30">
                                 <span class="text-slate-400 block text-xs mb-1">預估年息</span>
-                                <span class="text-yellow-400 font-black text-xl">$${Math.round(groupAnnualDiv).toLocaleString()}</span>
+                                <span class="text-yellow-400 font-black text-xl font-num">$${Math.round(groupAnnualDiv).toLocaleString()}</span>
                             </div>
                              <div class="px-3 py-2 bg-slate-800/50 rounded border border-slate-700/30">
                                 <span class="text-slate-400 block text-xs mb-1">殖利率</span>
-                                <span class="text-rose-400 font-black text-xl">${groupYield}%</span>
+                                <span class="text-rose-400 font-black text-xl font-num">${groupYield}%</span>
                             </div>
                         </div>
                         <button onclick="toggleChartLabelPos(${i})" class="screenshot-hide absolute top-3 right-12 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center font-bold text-lg" title="切換 內/外">◐</button>
                         <button onclick="downloadChart(${i})" class="screenshot-hide absolute top-3 right-2 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center" title="另開高畫質圖檔">📷</button>
                         <button onclick="deleteChart(${i})" class="screenshot-hide absolute top-3 left-3 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center" title="刪除分組">✕</button>
                         <div class="chart-container"><canvas id="canvas-${i}"></canvas></div>
-                        <div class="note-legend font-medium">${notesHtml || '<span class="opacity-20">無備註</span>'}</div>
                     </div>`;
             });
 
@@ -557,26 +542,20 @@
                 const gainRec = parseFloat(item.gainRec) || 0;
                 const currentPrice = parseFloat(item.currentPrice) || 0;
                 
-                // --- 核心計算：淨成本與損益 ---
-                const totalCost = shares * 1000 * avgPrice; // 原始總成本
-                const netCostValue = totalCost - divRec - gainRec; // 扣除配息與已實現後的淨成本
-                const netCostPerShare = shares > 0 ? (netCostValue / (shares * 1000)) : 0; // 每股淨成本
+                const totalCost = shares * 1000 * avgPrice;
+                const netCostValue = totalCost - divRec - gainRec; 
+                const netCostPerShare = shares > 0 ? (netCostValue / (shares * 1000)) : 0; 
                 
                 let plHtml = '';
-                // 如果有現價，就計算未實現損益
                 if(currentPrice > 0 && shares > 0) {
-                    // 未實現損益 = (現價 - 淨成本) * 股數
-                    // 這裡的邏輯是：如果我現在賣掉，跟我當初買的成本(扣掉已經拿回來的錢) 差多少
                     const unrealizedPL = (currentPrice - netCostPerShare) * shares * 1000;
-                    
                     const plClass = unrealizedPL >= 0 ? 'text-gain' : 'text-loss';
                     const plSign = unrealizedPL >= 0 ? '+' : '';
-                    
                     plHtml = `
                         <div class="flex justify-between items-center text-xs mt-2 border-t border-slate-700/50 pt-1.5">
-                            <span class="text-slate-400">現價 <span class="text-white font-bold ml-1">${currentPrice}</span></span>
-                            <span class="text-slate-400" title="淨成本 = (總成本 - 領息 - 獲利) / 股數">淨本 <span class="text-slate-200 font-bold ml-1">${netCostPerShare.toFixed(2)}</span></span>
-                            <span class="${plClass} font-bold ml-2 text-sm">${plSign}${Math.round(unrealizedPL/10000).toLocaleString()}萬</span>
+                            <span class="text-slate-400">現價 <span class="text-white font-bold ml-1 font-num">${currentPrice}</span></span>
+                            <span class="text-slate-400" title="淨成本 = (總成本 - 領息 - 獲利) / 股數">淨本 <span class="text-slate-200 font-bold ml-1 font-num">${netCostPerShare.toFixed(2)}</span></span>
+                            <span class="${plClass} font-bold ml-2 text-sm font-num">${plSign}${Math.round(unrealizedPL/10000).toLocaleString()}萬</span>
                         </div>
                     `;
                 } else {
@@ -592,6 +571,9 @@
                     estAnnual = shares * 1000 * amt * freq;
                 }
 
+                // 顯示邏輯：如果有備註，就顯示備註 (例如 台積電)，代號顯示在括號；如果沒備註，就顯示代號
+                const displayName = item.note ? `${item.symbol} ${item.note}` : item.symbol;
+
                 listHTML += `
                     <div class="compact-row" data-id="${item.id}">
                         <div class="drag-handle">☰</div>
@@ -600,9 +582,10 @@
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center">
                                     <span class="font-bold text-[15px] tracking-wide text-white">${item.symbol}</span>
-                                    <span class="text-slate-500 text-xs ml-2 font-medium">${item.shares}張</span>
+                                    ${item.note ? `<span class="stock-name-display">${item.note}</span>` : ''}
+                                    <span class="text-slate-500 text-xs ml-2 font-medium font-num">${item.shares}張</span>
                                 </div>
-                                <span class="text-[10px] text-yellow-500 bg-yellow-900/20 px-1.5 py-0.5 rounded font-medium ml-2 whitespace-nowrap">息 $${Math.round(estAnnual).toLocaleString()}</span>
+                                <span class="text-[10px] text-yellow-500 bg-yellow-900/20 px-1.5 py-0.5 rounded font-medium ml-2 whitespace-nowrap font-num">息 $${Math.round(estAnnual).toLocaleString()}</span>
                             </div>
                             ${plHtml}
                         </div>
@@ -729,7 +712,7 @@
                 note: document.getElementById('note').value.trim() 
             };
             if (editId) { myAssets[myAssets.findIndex(i => i.id == editId)] = data; } else { myAssets.push(data); if (chartConfigs.length > 0) { if (!chartConfigs[0].selectedIds) chartConfigs[0].selectedIds = []; chartConfigs[0].selectedIds.push(data.id); } }
-            ["editId", "symbol", "shares", "avgPrice", "currentPrice", "divRec", "gainRec", "note", "divAmt"].forEach(id => document.getElementById(id).value = (id.includes('Rec') || id === 'divAmt' ? 0 : ""));
+            ["editId", "symbol", "shares", "avgPrice", "currentPrice", "divRec", "gainRec", "note", "divAmt"].forEach(id => document.getElementById(id).value = (id.includes('Rec') || id === 'divAmt' || id === 'currentPrice' ? 0 : ""));
             document.getElementById('fontSize').value = 12;
             document.getElementById('divFreq').value = 1; 
             document.getElementById('includeInMonthly').checked = true;
