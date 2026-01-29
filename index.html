@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stock Dashboard Pro (Hybrid Name)</title>
+    <title>Stock Dashboard Pro (Detail View)</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,7 +33,7 @@
         [data-theme="purple"] { --bg-body: #180326; --bg-card: #3b0764; --bg-input: #581c87; --border-color: #a855f7; --text-main: #faf5ff; --text-sub: #d8b4fe; --chart-border: #180326; --input-text: #f3e8ff; --row-bg: #12021d; --row-border: #4a0d75; --tech-line: #c084fc; --tech-text-pct: #c084fc; --btn-bg: #3b0764; --btn-text: #d8b4fe; }
 
         body { background-color: var(--bg-body); color: var(--text-main); font-family: var(--font-main); transition: background-color 0.3s, color 0.3s; letter-spacing: 0.02em; }
-        .input-card { background: var(--bg-card); border-radius: 12px; padding: 16px; border: 2px solid var(--border-color); margin-bottom: 20px; transition: 0.3s; }
+        .input-card { background: var(--bg-card); border-radius: 12px; padding: 16px; border: 2px solid var(--border-color); margin-bottom: 20px; scroll-margin-top: 20px; transition: background-color 0.3s, border-color 0.3s; }
         .input-field { background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; color: var(--input-text) !important; font-size: 16px !important; width: 100%; transition: all 0.3s; font-family: var(--font-main); }
         .compact-row { background: var(--row-bg); border: 1px solid var(--row-border); margin-bottom: 8px; border-radius: 10px; display: flex; align-items: center; padding: 14px; min-height: 60px; transition: all 0.3s; flex-wrap: wrap; }
         .drag-handle { cursor: move; color: #3b82f6; width: 40px; display: none; align-items: center; justify-content: center; font-size: 20px; background: rgba(59, 130, 246, 0.1); border-radius: 6px; margin-right: 12px; }
@@ -62,15 +62,20 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         
         select.input-field { -webkit-appearance: none; appearance: none; }
+        
+        /* 檢視模式 / 編輯模式 切換控制 */
         .hidden-in-view-mode { display: block; }
         .view-mode-active .hidden-in-view-mode { display: none !important; }
+        
+        /* 新增：檢視模式專用顯示 (圓餅圖下方對照表) */
+        .show-in-view-mode { display: none; }
+        .view-mode-active .show-in-view-mode { display: block !important; }
+
         .title-input { border: none; border-bottom: 1px dashed var(--border-color); border-radius: 0; background: transparent; }
         .title-input:focus { border-bottom: 1px solid var(--text-main); outline: none; }
 
         .text-gain { color: #f87171; } 
         .text-loss { color: #4ade80; }
-        
-        /* 讓備註顯示更顯眼 */
         .stock-name-display { font-size: 14px; font-weight: 500; color: var(--text-sub); margin-left: 6px; }
     </style>
 </head>
@@ -236,7 +241,7 @@
             
             for (let i = 0; i < uniqueSymbols.length; i++) {
                 const sym = uniqueSymbols[i];
-                if(!sym || isNaN(sym)) continue; // 跳過非數字代號
+                if(!sym || isNaN(sym)) continue; 
                 txt.innerText = `更新中 (${i+1}/${uniqueSymbols.length}): ${sym}`;
                 try {
                     const data = await fetchRace(`/dividend/${sym}`);
@@ -439,6 +444,9 @@
                 let groupAnnualDiv = 0;
                 let groupCostBasis = 0;
                 
+                // 新增：收集該圖表的對照表資料 (Legend)
+                let legendItems = '';
+
                 conf.selectedIds.forEach(sid => {
                     const a = myAssets.find(item => item.id == sid);
                     if (a) {
@@ -454,6 +462,19 @@
                             groupAnnualDiv += (shares * 1000 * amt * freq);
                         }
                         groupCostBasis += (shares * 1000 * avgPrice);
+
+                        // 建立對照表項目 (只在非編輯模式顯示)
+                        const stockColor = getItemColor(myAssets.findIndex(ma => ma.id == sid));
+                        const noteText = a.note ? a.note : '-';
+                        legendItems += `
+                            <div class="flex items-center justify-between text-xs py-1.5 border-b border-slate-700/30">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-2 h-2 rounded-full" style="background-color: ${stockColor}"></div>
+                                    <span class="font-bold text-slate-300 font-num">${a.symbol}</span>
+                                </div>
+                                <span class="text-slate-400 font-medium">${noteText}</span>
+                            </div>
+                        `;
                     }
                 });
 
@@ -490,6 +511,9 @@
                         <button onclick="downloadChart(${i})" class="screenshot-hide absolute top-3 right-2 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center" title="另開高畫質圖檔">📷</button>
                         <button onclick="deleteChart(${i})" class="screenshot-hide absolute top-3 left-3 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center" title="刪除分組">✕</button>
                         <div class="chart-container"><canvas id="canvas-${i}"></canvas></div>
+                        <div class="show-in-view-mode mt-4 px-2 bg-slate-800/20 rounded-lg">
+                            ${legendItems || '<div class="text-xs text-slate-600 text-center py-2">無資料</div>'}
+                        </div>
                     </div>`;
             });
 
@@ -551,11 +575,13 @@
                     const unrealizedPL = (currentPrice - netCostPerShare) * shares * 1000;
                     const plClass = unrealizedPL >= 0 ? 'text-gain' : 'text-loss';
                     const plSign = unrealizedPL >= 0 ? '+' : '';
+                    
+                    // 修正：細到百位數，顯示小數點後兩位 (1.23萬)
                     plHtml = `
                         <div class="flex justify-between items-center text-xs mt-2 border-t border-slate-700/50 pt-1.5">
                             <span class="text-slate-400">現價 <span class="text-white font-bold ml-1 font-num">${currentPrice}</span></span>
                             <span class="text-slate-400" title="淨成本 = (總成本 - 領息 - 獲利) / 股數">淨本 <span class="text-slate-200 font-bold ml-1 font-num">${netCostPerShare.toFixed(2)}</span></span>
-                            <span class="${plClass} font-bold ml-2 text-sm font-num">${plSign}${Math.round(unrealizedPL/10000).toLocaleString()}萬</span>
+                            <span class="${plClass} font-bold ml-2 text-sm font-num">${plSign}${(unrealizedPL/10000).toFixed(2)}萬</span>
                         </div>
                     `;
                 } else {
@@ -571,7 +597,6 @@
                     estAnnual = shares * 1000 * amt * freq;
                 }
 
-                // 顯示邏輯：如果有備註，就顯示備註 (例如 台積電)，代號顯示在括號；如果沒備註，就顯示代號
                 const displayName = item.note ? `${item.symbol} ${item.note}` : item.symbol;
 
                 listHTML += `
