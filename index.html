@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Stock Dashboard Pro (Private Server)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <style>
+        :root {
+            --bg-body: #0f172a; --bg-card: #1e293b; --bg-input: #334155; 
+            --border-color: #334155; --text-main: #ffffff; --text-sub: #94a3b8;
+            --chart-border: #0f172a; --input-text: #ffffff;
+            --row-bg: #111827; --row-border: #1f2937;
+            --tech-line: #06b6d4; --tech-text-pct: #06b6d4;
+            --btn-bg: #1e293b; --btn-text: #94a3b8;
+        }
+        [data-theme="ocean"] {
+            --bg-body: #0a1929; --bg-card: #132f4c; --bg-input: #1e4976;
+            --border-color: #2a6496; --text-main: #e2e8f0; --text-sub: #94a3b8;
+            --chart-border: #0a1929; --input-text: #ffffff;
+            --row-bg: #0d2137; --row-border: #132f4c;
+            --tech-line: #38bdf8; --tech-text-pct: #38bdf8;
+            --btn-bg: #132f4c; --btn-text: #94a3b8;
+        }
+        [data-theme="oled"] {
+            --bg-body: #000000; --bg-card: #121212; --bg-input: #262626;
+            --border-color: #333333; --text-main: #e5e5e5; --text-sub: #a3a3a3;
+            --chart-border: #000000; --input-text: #e5e5e5;
+            --row-bg: #0a0a0a; --row-border: #262626;
+            --tech-line: #22d3ee; --tech-text-pct: #22d3ee;
+            --btn-bg: #171717; --btn-text: #a3a3a3;
+        }
+
+        body { background-color: var(--bg-body); color: var(--text-main); font-family: -apple-system, sans-serif; transition: background-color 0.3s, color 0.3s; }
+        .input-card { background: var(--bg-card); border-radius: 12px; padding: 16px; border: 2px solid var(--border-color); margin-bottom: 20px; transition: 0.3s; }
+        .input-field { background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; color: var(--input-text) !important; font-size: 16px !important; width: 100%; }
+        .compact-row { background: var(--row-bg); border: 1px solid var(--row-border); margin-bottom: 8px; border-radius: 10px; display: flex; align-items: center; padding: 14px; min-height: 60px; position: relative;}
+        .drag-handle { cursor: move; color: #3b82f6; width: 40px; display: none; align-items: center; justify-content: center; font-size: 20px; background: rgba(59, 130, 246, 0.1); border-radius: 6px; margin-right: 12px; }
+        .sort-mode-active .drag-handle { display: flex; }
+        .num-dot { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; border: 1px solid transparent; }
+        
+        .chart-box { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color); padding: 15px; margin-bottom: 12px; position: relative; }
+        .master-chart-box { border: 2px solid #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.15); }
+        .chart-container { height: 400px; position: relative; }
+        .master-container { height: 480px; position: relative; }
+        .note-legend { margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 12px; font-size: 13px; color: var(--text-sub); text-align: center; line-height: 1.6; }
+        .screenshot-hide { opacity: 1; transition: opacity 0.2s; }
+        .capturing .screenshot-hide { opacity: 0 !important; visibility: hidden !important; }
+
+        .btn-icon { background: var(--btn-bg); color: var(--btn-text); border: 1px solid var(--border-color); }
+        .btn-icon:hover { color: var(--text-main); border-color: var(--text-main); }
+        
+        /* 載入動畫 */
+        #loadingOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 9999;
+            display: none; justify-content: center; align-items: center; flex-direction: column;
+        }
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid #3b82f6; border-top-color: transparent; border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 15px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* 價格標籤樣式 */
+        .price-tag { font-family: 'Roboto', sans-serif; font-weight: bold; }
+        .up-trend { color: #ef4444; } /* 台股紅漲 */
+        .down-trend { color: #10b981; } /* 台股綠跌 */
+        .mode-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 5px; vertical-align: middle; }
+    </style>
+</head>
+<body class="p-3">
+
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="text-blue-400 font-bold tracking-widest" id="loadingText">處理中...</div>
+    </div>
+
+    <div class="max-w-7xl mx-auto">
+        <header class="flex flex-col md:flex-row items-center justify-between mb-6 gap-y-4">
+            <div class="flex flex-col items-center md:items-start w-full md:w-auto">
+                <div class="flex items-center">
+                    <h2 class="text-2xl font-black text-blue-500 italic text-center">DASHBOARD <span class="text-xs text-yellow-400 not-italic ml-1" style="text-shadow: 0 0 10px #facc15, 0 0 20px #854d0e;">PRO</span></h2>
+                </div>
+                <div class="flex items-center gap-3 mt-1">
+                    <button onclick="cycleTheme()" class="text-xs px-2 py-0.5 rounded border border-slate-600 bg-slate-800 text-slate-300 hover:text-white transition-all whitespace-nowrap">
+                        🎨 <span id="themeName">預設</span>
+                    </button>
+                    <button onclick="toggleViewMode()" id="viewModeBtn" class="text-xs px-2 py-0.5 rounded border border-purple-600 bg-purple-900 text-purple-200 hover:text-white transition-all whitespace-nowrap font-bold">
+                        📊 切換：成本模式
+                    </button>
+                </div>
+            </div>
+            
+            <div class="flex flex-wrap gap-2 justify-center md:justify-end w-full md:w-auto">
+                 <button onclick="updateAllPrices()" class="bg-amber-600 text-white text-[10px] px-3 py-2 rounded-lg font-bold whitespace-nowrap shadow-lg hover:scale-105 transition flex items-center gap-1">
+                    ⚡ 更新股價
+                </button>
+                <button onclick="addNewChart()" class="bg-blue-600 text-white text-[10px] px-3 py-2 rounded-lg font-bold whitespace-nowrap shadow-lg hover:scale-105 transition">+ 分組</button>
+                <button onclick="copyToClipboard()" class="bg-emerald-700 text-white text-[10px] px-3 py-2 rounded-lg font-bold whitespace-nowrap shadow-lg hover:scale-105 transition">備份</button>
+                <button onclick="importFromText()" class="bg-slate-700 text-white text-[10px] px-3 py-2 rounded-lg font-bold whitespace-nowrap shadow-lg hover:scale-105 transition">還原</button>
+            </div>
+        </header>
+
+        <div id="masterChartWrapper" class="mb-8 hidden">
+            <div class="chart-box master-chart-box" id="masterChartBox">
+                <h3 class="text-center text-blue-400 font-bold text-xl mb-1 tracking-widest">
+                    <span id="masterTitle">資產配置總覽</span>
+                </h3>
+                <div class="text-center text-slate-500 text-xs mb-2 font-mono tracking-wider">
+                    總資產：<span id="grandTotal" class="text-emerald-400 font-black text-2xl">0</span> 萬
+                </div>
+                <button onclick="toggleMasterLabelPos()" class="screenshot-hide absolute top-3 right-12 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center font-bold text-lg" title="切換 內/外">◐</button>
+                <button onclick="downloadMasterChart()" class="screenshot-hide absolute top-3 right-3 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center" title="另開高畫質圖檔">📷</button>
+                <div class="master-container"><canvas id="masterCanvas"></canvas></div>
+            </div>
+        </div>
+
+        <div id="chartsWrapper" class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6"></div>
+
+        <div id="inputArea" class="input-card shadow-2xl">
+            <input type="hidden" id="editId" value="">
+            <div class="grid grid-cols-2 md:grid-cols-7 gap-3 mb-4">
+                <div class="col-span-1"><label class="text-[10px] text-slate-400 mb-1 block">股票代號</label><input id="symbol" class="input-field" placeholder="2330"></div>
+                <div class="col-span-1"><label class="text-[10px] text-blue-400 mb-1 block">文字大小</label><input type="number" id="fontSize" class="input-field" value="12"></div>
+                <div class="col-span-1"><label class="text-[10px] text-slate-400 mb-1 block">張數</label><input type="number" id="shares" class="input-field" step="0.001"></div>
+                <div class="col-span-1"><label class="text-[10px] text-slate-400 mb-1 block">均價 (成本)</label><input type="number" id="avgPrice" class="input-field"></div>
+                 <div class="col-span-1"><label class="text-[10px] text-amber-400 mb-1 block">現價 (更新)</label><input type="number" id="currentPrice" class="input-field" placeholder="自動抓取"></div>
+                <div class="col-span-1"><label class="text-[10px] text-emerald-400 mb-1 block">領息</label><input type="number" id="divRec" value="0" class="input-field"></div>
+                <div class="col-span-1"><label class="text-[10px] text-orange-400 mb-1 block">獲利</label><input type="number" id="gainRec" value="0" class="input-field"></div>
+                <div class="col-span-2 md:col-span-7"><label class="text-[10px] text-yellow-500 mb-1 block">備註 (置中於圖表下方)</label><input id="note" class="input-field"></div>
+            </div>
+            <button onclick="saveStock()" class="w-full bg-blue-600 py-4 rounded-xl font-black text-xl active:scale-95 transition-all">儲存並刷新</button>
+        </div>
+
+        <div class="flex justify-between items-center mb-4 px-1">
+            <span class="text-sm font-bold text-slate-500 uppercase tracking-widest">資產列表</span>
+            <button id="sortToggle" onclick="toggleSortMode()" class="text-xs bg-slate-800 border border-slate-600 px-5 py-2 rounded-full text-blue-400 font-bold">⇅ 排序模式</button>
+        </div>
+        <div id="mainTable" class="space-y-2 pb-24"></div>
+    </div>
+    
+    <footer class="text-center text-slate-600 text-[10px] mt-8 py-6 border-t border-slate-800 tracking-wider">
+        Copyright © Titleman | Powered by Private Server
+    </footer>
+    
+    <script>
+        // --- ⚠️ 你的專屬後端設定 ⚠️ ---
+        const VERCEL_URL = "https://my-stock-api-blond.vercel.app";
+        const RENDER_URL = "https://my-stock-api-g3bz.onrender.com";
+
+        // --- 資料載入 ---
+        function loadRobustData(currentKey, fallbackKeys, defaultValue) {
+            let data = localStorage.getItem(currentKey);
+            if (data && data !== "[]" && data !== "null") return JSON.parse(data);
+            for (let key of fallbackKeys) {
+                let oldData = localStorage.getItem(key);
+                if (oldData && oldData !== "[]" && oldData !== "null") {
+                    localStorage.setItem(currentKey, oldData);
+                    return JSON.parse(oldData);
+                }
+            }
+            return defaultValue;
+        }
+
+        const assetKeys = ['myAssetsV107', 'myAssetsV106', 'myAssets']; 
+        let myAssets = loadRobustData('myAssetsV108', assetKeys, []);
+        let chartConfigs = loadRobustData('chartConfigsV108', ['chartConfigsV108', 'chartConfigs'], [{ id: Date.now(), title: '主要配置', selectedIds: [], labelPos: 'outside' }]);
+        
+        // 確保資料結構有 currentPrice
+        myAssets.forEach(a => { if(typeof a.currentPrice === 'undefined') a.currentPrice = 0; });
+
+        let masterLabelPos = localStorage.getItem('masterLabelPosV1') || 'outside';
+        let currentTheme = localStorage.getItem('appThemeV1') || 'dark';
+        let viewMode = localStorage.getItem('viewMode') || 'cost'; // cost | market
+        
+        let chartInstances = {};
+        let masterChartInstance = null;
+        let isSortMode = false;
+        let sortable = null;
+
+        const uniquePalette = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6', '#fbbf24', '#6366f1', '#d946ef', '#2dd4bf', '#f43f5e', '#a855f7', '#34d399', '#fb7185', '#60a5fa', '#fb923c', '#818cf8'];
+        function getItemColor(index) { return uniquePalette[index % uniquePalette.length]; }
+        function getThemeColor(varName) { return getComputedStyle(document.documentElement).getPropertyValue(varName).trim(); }
+
+        // --- API 連線邏輯 ---
+        async function fetchRace(endpoint) {
+            const controller = new AbortController();
+            const signal = controller.signal;
+            const vercelPromise = fetch(`${VERCEL_URL}${endpoint}`, { signal }).then(res => { if (!res.ok) throw new Error("Vercel error"); return res.json(); });
+            const startRender = () => fetch(`${RENDER_URL}${endpoint}`, { signal }).then(res => { if (!res.ok) throw new Error("Render error"); return res.json(); });
+            const delayedRenderPromise = new Promise((resolve, reject) => {
+                setTimeout(() => { startRender().then(resolve).catch(reject); }, 3000); 
+            });
+            try { return await Promise.any([vercelPromise, delayedRenderPromise]); } catch (error) { return await startRender(); }
+        }
+
+        async function updateAllPrices() {
+            const btn = document.getElementById('loadingOverlay');
+            const txt = document.getElementById('loadingText');
+            btn.style.display = 'flex';
+            txt.innerText = "正在連線您的專屬主機...";
+            
+            let updatedCount = 0;
+            const uniqueSymbols = [...new Set(myAssets.map(a => a.symbol))];
+            
+            for (let i = 0; i < uniqueSymbols.length; i++) {
+                const sym = uniqueSymbols[i];
+                if(!sym) continue;
+                txt.innerText = `正在更新 (${i+1}/${uniqueSymbols.length}): ${sym}`;
+                try {
+                    const data = await fetchRace(`/dividend/${sym}`);
+                    if (data && data.price) {
+                        myAssets.filter(a => a.symbol === sym).forEach(a => {
+                            a.currentPrice = data.price;
+                        });
+                        updatedCount++;
+                    }
+                } catch (e) {
+                    console.error(`Failed to update ${sym}`, e);
+                }
+            }
+            
+            btn.style.display = 'none';
+            render();
+            alert(`更新完成！共更新 ${updatedCount} 檔股票價格。`);
+        }
+
+        // --- Chart 插件 ---
+        const techLabelsPlugin = {
+            id: 'techLabels',
+            afterDatasetsDraw(chart, args, options) {
+                const { ctx, chartArea: { top, bottom, left, right, width, height } } = chart;
+                const lineColor = getThemeColor('--tech-line');
+                const pctColor = getThemeColor('--tech-text-pct');
+                const textColor = getThemeColor('--text-main');
+                const isMobile = window.innerWidth < 480;
+
+                let labels = [];
+                chart.data.datasets.forEach((dataset, i) => {
+                    const meta = chart.getDatasetMeta(i);
+                    meta.data.forEach((datapoint, index) => {
+                        const { x, y } = datapoint.tooltipPosition();
+                        const model = datapoint;
+                        const angle = (model.startAngle + model.endAngle) / 2;
+                        const isRight = angle < Math.PI / 2 || angle > Math.PI * 1.5;
+                        const outerRadius = model.outerRadius;
+                        const lineExtendLen = isMobile ? 10 : 30;
+                        const elbowX = model.x + Math.cos(angle) * (outerRadius + lineExtendLen);
+                        const elbowY = model.y + Math.sin(angle) * (outerRadius + lineExtendLen);
+
+                        labels.push({
+                            index, isRight, startX: model.x + Math.cos(angle) * outerRadius, startY: model.y + Math.sin(angle) * outerRadius, elbowX, elbowY, angle,
+                            text: chart.data.labels[index],
+                            pct: ((dataset.data[index] / dataset.data.reduce((a,b)=>a+b,0)) * 100).toFixed(1) + '%',
+                            finalY: elbowY 
+                        });
+                    });
+                });
+
+                ['left', 'right'].forEach(side => {
+                    const isRightSide = (side === 'right');
+                    const sideLabels = labels.filter(l => l.isRight === isRightSide).sort((a, b) => a.finalY - b.finalY);
+                    if (sideLabels.length === 0) return;
+                    const minSpacing = isMobile ? 40 : 55; 
+                    for (let i = 1; i < sideLabels.length; i++) {
+                        if (sideLabels[i].finalY - sideLabels[i-1].finalY < minSpacing) sideLabels[i].finalY = sideLabels[i-1].finalY + minSpacing;
+                    }
+                });
+
+                labels.forEach(l => {
+                    const lineBendLen = isMobile ? 10 : 40;
+                    const endX = l.elbowX + (l.isRight ? lineBendLen : -lineBendLen);
+                    ctx.save();
+                    ctx.beginPath(); ctx.moveTo(l.startX, l.startY); ctx.lineTo(l.elbowX, l.elbowY); ctx.lineTo(l.elbowX, l.finalY); ctx.lineTo(endX, l.finalY);
+                    ctx.strokeStyle = lineColor; ctx.lineWidth = 1.5; ctx.stroke(); ctx.restore();
+
+                    ctx.save();
+                    ctx.font = isMobile ? 'bold 10px -apple-system, sans-serif' : 'bold 13px -apple-system, sans-serif';
+                    ctx.fillStyle = textColor; ctx.textAlign = l.isRight ? 'left' : 'right'; ctx.textBaseline = 'middle';
+                    const textPadding = 8;
+                    ctx.fillText(l.text, endX + (l.isRight ? textPadding : -textPadding), l.finalY - 8);
+                    ctx.font = isMobile ? '9px -apple-system, sans-serif' : '12px -apple-system, sans-serif';
+                    ctx.fillStyle = pctColor;
+                    ctx.fillText(l.pct, endX + (l.isRight ? textPadding : -textPadding), l.finalY + 8);
+                    ctx.restore();
+                });
+            }
+        };
+
+        // --- 主邏輯 ---
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            const names = { 'dark': '預設', 'ocean': '海洋', 'oled': 'OLED' };
+            document.getElementById('themeName').innerText = names[theme];
+            localStorage.setItem('appThemeV1', theme);
+            currentTheme = theme;
+            render(); 
+        }
+        function cycleTheme() {
+            const order = ['dark', 'ocean', 'oled'];
+            applyTheme(order[(order.indexOf(currentTheme) + 1) % order.length]);
+        }
+        
+        function toggleViewMode() {
+            viewMode = (viewMode === 'cost') ? 'market' : 'cost';
+            localStorage.setItem('viewMode', viewMode);
+            render();
+        }
+
+        // 核心計算公式
+        function calculateValue(item) {
+            if (!item) return 0;
+            if (viewMode === 'market') {
+                const p = (item.currentPrice && item.currentPrice > 0) ? item.currentPrice : item.avgPrice;
+                return p * item.shares * 1000;
+            } else {
+                const cost = (item.avgPrice * item.shares * 1000) - (item.divRec || 0) - (item.gainRec || 0);
+                return cost > 0 ? cost : 0;
+            }
+        }
+
+        function render() {
+            localStorage.setItem('myAssetsV108', JSON.stringify(myAssets));
+            localStorage.setItem('chartConfigsV108', JSON.stringify(chartConfigs));
+            localStorage.setItem('masterLabelPosV1', masterLabelPos);
+
+            if(!document.documentElement.getAttribute('data-theme')) applyTheme(currentTheme);
+
+            const vmBtn = document.getElementById('viewModeBtn');
+            if(viewMode === 'market') {
+                vmBtn.innerText = "📈 切換：市值模式";
+                vmBtn.className = vmBtn.className.replace('bg-purple-900', 'bg-emerald-900').replace('text-purple-200', 'text-emerald-200').replace('border-purple-600', 'border-emerald-600');
+                document.getElementById('masterTitle').innerText = "市值分佈總覽";
+            } else {
+                vmBtn.innerText = "📊 切換：成本模式";
+                vmBtn.className = vmBtn.className.replace('bg-emerald-900', 'bg-purple-900').replace('text-emerald-200', 'text-purple-200').replace('border-emerald-600', 'border-purple-600');
+                document.getElementById('masterTitle').innerText = "淨成本配置總覽";
+            }
+
+            const chartBorderColor = getThemeColor('--chart-border');
+            const textColor = getThemeColor('--text-main');
+            const isMobile = window.innerWidth < 480;
+
+            const masterLabels = [];
+            const masterData = [];
+            const masterColors = [];
+            let grandTotal = 0;
+
+            chartConfigs.forEach((conf, i) => {
+                let groupTotal = 0;
+                conf.selectedIds.forEach(sid => {
+                    const s = myAssets.find(a => a.id == sid);
+                    if(s) groupTotal += calculateValue(s);
+                });
+                if(groupTotal > 0) {
+                    masterLabels.push(conf.title);
+                    masterData.push(groupTotal);
+                    masterColors.push(getItemColor(i)); 
+                    grandTotal += groupTotal;
+                }
+            });
+
+            document.getElementById('grandTotal').innerText = (grandTotal / 10000).toFixed(1);
+            
+            const masterWrapper = document.getElementById('masterChartWrapper');
+            if(grandTotal > 0) {
+                masterWrapper.classList.remove('hidden');
+                const ctxM = document.getElementById('masterCanvas').getContext('2d');
+                if (masterChartInstance) masterChartInstance.destroy();
+                
+                masterChartInstance = new Chart(ctxM, {
+                    type: 'pie',
+                    data: { labels: masterLabels, datasets: [{ data: masterData, backgroundColor: masterColors, borderWidth: 2, borderColor: chartBorderColor }]},
+                    options: {
+                        devicePixelRatio: 3, responsive: true, maintainAspectRatio: false, radius: isMobile ? '50%' : '90%', 
+                        layout: { padding: { top: 50, bottom: 20, left: 20, right: 20 } },
+                        plugins: {
+                            legend: { display: (masterLabelPos === 'inside'), position: 'bottom', labels: { color: textColor, font: { size: 12 }, padding: 15 } },
+                            datalabels: { 
+                                display: (masterLabelPos === 'inside'), color: '#ffffff', textAlign: 'center', font: { weight: 'bold', size: 13 },
+                                formatter: (val, ctx) => ctx.chart.data.labels[ctx.dataIndex] + '\n' + ((val / grandTotal) * 100).toFixed(1) + '%'
+                            }
+                        }
+                    },
+                    plugins: (masterLabelPos === 'outside') ? [techLabelsPlugin] : []
+                });
+            } else {
+                masterWrapper.classList.add('hidden');
+            }
+
+            const wrapper = document.getElementById('chartsWrapper');
+            wrapper.innerHTML = '';
+            chartConfigs.forEach((conf, i) => {
+                const noteItems = conf.selectedIds.map(sid => myAssets.find(a => a.id == sid)).filter(a => a && a.note);
+                let notesHtml = noteItems.map(a => `<div><span class="text-blue-400 font-bold">${a.symbol}</span>：${a.note}</div>`).join('');
+
+                let totalCost = 0;
+                conf.selectedIds.forEach(sid => {
+                    const s = myAssets.find(item => item.id == sid);
+                    if (s) totalCost += calculateValue(s);
+                });
+                const totalWan = (totalCost / 10000).toFixed(1);
+                const valLabel = (viewMode === 'market') ? "市值" : "成本";
+
+                wrapper.innerHTML += `
+                    <div class="chart-box" id="chart-box-${i}">
+                        <input type="text" onchange="chartConfigs[${i}].title=this.value;render()" value="${conf.title}" class="bg-transparent border-none font-bold text-blue-400 text-center w-full mb-1 text-lg">
+                        <div class="text-center text-slate-500 text-xs mb-2 font-mono tracking-wider">
+                            ${valLabel}：<span class="text-emerald-400 font-black text-base">${totalWan}</span> 萬
+                        </div>
+                        <button onclick="toggleChartLabelPos(${i})" class="screenshot-hide absolute top-3 right-12 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center font-bold text-lg">◐</button>
+                        <button onclick="downloadChart(${i})" class="screenshot-hide absolute top-3 right-2 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center">📷</button>
+                        <button onclick="deleteChart(${i})" class="screenshot-hide absolute top-3 left-3 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center">✕</button>
+                        <div class="chart-container"><canvas id="canvas-${i}"></canvas></div>
+                        <div class="note-legend">${notesHtml || '<span class="opacity-20">無備註</span>'}</div>
+                    </div>`;
+            });
+            
+            const body = document.getElementById('mainTable');
+            body.innerHTML = '';
+            myAssets.forEach((item, index) => {
+                const stockColor = getItemColor(index);
+                let btns = '';
+                chartConfigs.forEach((c, ci) => {
+                    const active = c.selectedIds.includes(parseInt(item.id));
+                    const style = active ? `background:${stockColor}; border-color:${stockColor}; color:white;` : `background:var(--row-border); border-color:var(--border-color); color:var(--text-sub);`;
+                    btns += `<div onclick="event.stopPropagation(); toggleToChart(${item.id}, ${ci})" style="${style}" class="num-dot">${ci+1}</div>`;
+                });
+
+                let infoHtml = "";
+                if(viewMode === 'market') {
+                    const currP = item.currentPrice || item.avgPrice;
+                    const marketVal = Math.round(currP * item.shares * 1000);
+                    const costVal = Math.round(item.avgPrice * item.shares * 1000);
+                    const pl = marketVal - costVal;
+                    const plClass = pl >= 0 ? 'up-trend' : 'down-trend';
+                    const plSign = pl >= 0 ? '+' : '';
+                    const priceDisplay = item.currentPrice ? item.currentPrice : `<span class="opacity-50">${item.avgPrice}</span>`;
+                    
+                    infoHtml = `
+                        <div class="flex flex-col items-end mr-3">
+                            <div class="text-xs text-slate-400">現價 ${priceDisplay}</div>
+                            <div class="text-[10px] font-bold ${plClass}">${plSign}${(pl/10000).toFixed(2)}萬</div>
+                        </div>
+                    `;
+                } else {
+                    infoHtml = `
+                        <div class="flex flex-col items-end mr-3">
+                            <div class="text-xs text-slate-400">均價 ${item.avgPrice}</div>
+                        </div>
+                    `;
+                }
+
+                body.innerHTML += `
+                    <div class="compact-row" data-id="${item.id}">
+                        <div class="drag-handle">☰</div>
+                        <div class="w-1.5 h-7 rounded-full mr-3" style="background:${stockColor}"></div>
+                        <div class="flex-1 text-sm">
+                            <span class="font-bold">${item.symbol}</span>
+                            <span class="text-slate-500 text-xs ml-2">${item.shares}張</span>
+                        </div>
+                        ${infoHtml}
+                        <div class="flex gap-1 ml-2">${btns}</div>
+                        <div class="flex gap-4 ml-4">
+                            <span onclick="editItem(${item.id})" class="text-blue-500 font-bold text-xs cursor-pointer">改</span>
+                            <span onclick="deleteItem(${item.id})" class="text-slate-700 text-xs cursor-pointer">✕</span>
+                        </div>
+                    </div>`;
+            });
+            if(isSortMode) initSortable();
+            updateCharts();
+        }
+
+        function updateCharts() {
+            const chartBorderColor = getThemeColor('--chart-border');
+            const isMobile = window.innerWidth < 480; 
+            chartConfigs.forEach((conf, i) => {
+                const ctx = document.getElementById(`canvas-${i}`).getContext('2d');
+                const dData = [], dLabels = [], dColors = [], dShares = [], dFontSizes = [];
+                conf.selectedIds.forEach(sid => {
+                    const idx = myAssets.findIndex(a => a.id == sid);
+                    if(idx !== -1) {
+                        const s = myAssets[idx];
+                        const val = calculateValue(s);
+                        dData.push(val > 0 ? val : 1);
+                        dLabels.push(s.symbol); dShares.push(s.shares); dColors.push(getItemColor(idx)); dFontSizes.push(s.fontSize || 12);
+                    }
+                });
+                if (chartInstances[i]) chartInstances[i].destroy();
+                const currentPos = conf.labelPos || 'outside';
+                chartInstances[i] = new Chart(ctx, {
+                    type: 'pie',
+                    data: { labels: dLabels, datasets: [{ data: dData, backgroundColor: dColors, borderWidth: 1, borderColor: chartBorderColor }]},
+                    options: {
+                        devicePixelRatio: 3, responsive: true, maintainAspectRatio: false, 
+                        layout: { padding: (currentPos === 'outside') ? (isMobile ? 60 : 40) : 20 },
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: {
+                                color: '#ffffff', textAlign: 'center', display: true, anchor: currentPos === 'outside' ? 'end' : 'center', align: currentPos === 'outside' ? 'end' : 'center', offset: currentPos === 'outside' ? 4 : 0, 
+                                font: (ctx) => ({ weight: 'bold', size: dFontSizes[ctx.dataIndex] }), 
+                                formatter: (val, ctx) => ctx.chart.data.labels[ctx.dataIndex] + '\n' + dShares[ctx.dataIndex] + '張'
+                            }
+                        }
+                    }
+                });
+            });
+        }
+
+        function toggleToChart(sid, ci) { 
+            if (!chartConfigs[ci]) return;
+            if (!chartConfigs[ci].selectedIds) chartConfigs[ci].selectedIds = [];
+            const arr = chartConfigs[ci].selectedIds;
+            const id = parseInt(sid);
+            const i = arr.indexOf(id); 
+            if (i > -1) arr.splice(i, 1); 
+            else arr.push(id); 
+            render(); 
+        }
+
+        function toggleMasterLabelPos() { masterLabelPos = (masterLabelPos === 'outside') ? 'inside' : 'outside'; render(); }
+        function toggleChartLabelPos(index) { const current = chartConfigs[index].labelPos || 'outside'; chartConfigs[index].labelPos = (current === 'outside') ? 'inside' : 'outside'; render(); }
+        
+        function captureAndOpenImage(element, fileName) {
+            const loading = document.getElementById('loadingOverlay'); 
+            const txt = document.getElementById('loadingText');
+            loading.style.display = 'flex'; 
+            txt.innerText = "高清渲染中...";
+            element.classList.add('capturing'); const originalBg = element.style.backgroundColor; element.style.backgroundColor = getThemeColor('--bg-card');
+            setTimeout(() => {
+                html2canvas(element, { scale: 5, backgroundColor: getThemeColor('--bg-card'), useCORS: true, logging: false, allowTaint: true, onclone: (clonedDoc) => { const clonedEl = clonedDoc.getElementById(element.id); if(clonedEl) clonedEl.style.transform = 'none'; } }).then(canvas => {
+                    loading.style.display = 'none'; element.classList.remove('capturing'); element.style.backgroundColor = originalBg; 
+                    const jpgUrl = canvas.toDataURL('image/jpeg', 1.0); const newWin = window.open('', '_blank');
+                    if (newWin) { newWin.document.write(`<html><head><title>${fileName}</title><style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background-color:#111}img{max-width:95%;height:auto;box-shadow:0 0 20px rgba(0,0,0,0.5);border-radius:12px}.tip{position:fixed;top:10px;left:50%;transform:translateX(-50%);color:#fff;background:rgba(0,0,0,0.7);padding:8px 16px;border-radius:20px;font-family:sans-serif;font-size:14px}</style></head><body><div class="tip">請長按圖片另存新檔</div><img src="${jpgUrl}"></body></html>`); newWin.document.close(); } else { alert('請允許彈出視窗'); }
+                }).catch(err => { console.error(err); loading.style.display = 'none'; element.classList.remove('capturing'); element.style.backgroundColor = originalBg; alert("失敗"); });
+            }, 100);
+        }
+        function downloadMasterChart() { const el = document.getElementById('masterChartBox'); const total = document.getElementById('grandTotal').innerText; captureAndOpenImage(el, `資產總覽_總值${total}萬`); }
+        function downloadChart(index) { const el = document.getElementById(`chart-box-${index}`); const title = chartConfigs[index].title || 'chart'; const val = (el.innerText.match(/：([\d\.]+) 萬/) || [])[1] || ''; captureAndOpenImage(el, `${title}_市值${val}萬`); }
+
+        function saveStock() {
+            const sym = document.getElementById('symbol').value.trim();
+            if(!sym) return;
+            const editId = document.getElementById('editId').value;
+            let existingCurrentPrice = 0;
+            if(editId) {
+                const exist = myAssets.find(i => i.id == editId);
+                if(exist) existingCurrentPrice = exist.currentPrice || 0;
+            }
+
+            const data = { 
+                id: editId ? parseInt(editId) : Date.now(), 
+                symbol: sym.toUpperCase(), 
+                fontSize: parseInt(document.getElementById('fontSize').value) || 12, 
+                shares: parseFloat(document.getElementById('shares').value) || 0, 
+                avgPrice: parseFloat(document.getElementById('avgPrice').value) || 0,
+                currentPrice: parseFloat(document.getElementById('currentPrice').value) || existingCurrentPrice, 
+                divRec: parseFloat(document.getElementById('divRec').value) || 0, 
+                gainRec: parseFloat(document.getElementById('gainRec').value) || 0, 
+                note: document.getElementById('note').value.trim() 
+            };
+            if (editId) { myAssets[myAssets.findIndex(i => i.id == editId)] = data; } 
+            else { myAssets.push(data); if (chartConfigs.length > 0) { if (!chartConfigs[0].selectedIds) chartConfigs[0].selectedIds = []; chartConfigs[0].selectedIds.push(data.id); } }
+            
+            ["editId", "symbol", "shares", "avgPrice", "currentPrice", "divRec", "gainRec", "note"].forEach(id => document.getElementById(id).value = (id.includes('Rec') ? 0 : ""));
+            document.getElementById('fontSize').value = 12;
+            render();
+        }
+        function editItem(id) {
+            const item = myAssets.find(i => i.id == id);
+            ["symbol", "fontSize", "shares", "avgPrice", "currentPrice", "divRec", "gainRec", "note"].forEach(k => document.getElementById(k).value = item[k] || (k.includes('Rec') ? 0 : ""));
+            document.getElementById('editId').value = item.id;
+            document.getElementById('inputArea').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        function deleteItem(id) { if(confirm("刪除？")) { myAssets = myAssets.filter(i => i.id !== id); render(); } }
+
+        function copyToClipboard() { const d = btoa(encodeURIComponent(JSON.stringify({myAssets, chartConfigs}))); const textArea = document.createElement("textarea"); textArea.value = d; textArea.style.position = "fixed"; textArea.style.left = "-9999px"; textArea.style.top = "0"; document.body.appendChild(textArea); textArea.focus(); textArea.select(); try { const successful = document.execCommand('copy'); if (successful) alert("備份已複製！"); else prompt("複製失敗，請手動複製代碼：", d); } catch (err) { console.error('Fallback', err); prompt("複製失敗，請手動複製代碼：", d); } document.body.removeChild(textArea); }
+        function importFromText() { const c = prompt("代碼："); if(c) { try { const d = JSON.parse(decodeURIComponent(atob(c))); myAssets=d.myAssets; chartConfigs=d.chartConfigs; render(); } catch(e){ alert("錯誤"); } } }
+        function addNewChart() { const t = prompt("組別名稱："); if (t) { chartConfigs.push({ id: Date.now(), title: t, selectedIds: [], labelPos: 'outside' }); render(); } }
+        function deleteChart(idx) { if (confirm("刪除？")) { chartConfigs.splice(idx, 1); render(); } }
+        function toggleSortMode() { isSortMode = !isSortMode; const btn = document.getElementById('sortToggle'); const table = document.getElementById('mainTable'); if(isSortMode) { btn.innerText = "✓ 鎖定順序"; table.classList.add('sort-mode-active'); initSortable(); } else { btn.innerText = "⇅ 排序模式"; table.classList.remove('sort-mode-active'); if (sortable) sortable.destroy(); } }
+        function initSortable() { const el = document.getElementById('mainTable'); if (sortable) sortable.destroy(); sortable = Sortable.create(el, { handle: '.drag-handle', animation: 200, onEnd: () => { const newOrder = Array.from(el.querySelectorAll('.compact-row')).map(r => parseInt(r.dataset.id)); myAssets = newOrder.map(id => myAssets.find(a => a.id === id)); render(); } }); }
+        
+        window.onload = () => { Chart.register(ChartDataLabels); render(); };
+    </script>
+</body>
+</html>
