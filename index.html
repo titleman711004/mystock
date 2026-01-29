@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stock Dashboard Pro (Private Server)</title>
+    <title>Stock Dashboard Pro (Failover)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -149,8 +149,9 @@
     </footer>
     
     <script>
-        // --- ⚠️ 你的專屬後端設定 ⚠️ ---
-        const VERCEL_URL = "https://my-stock-api-blond.vercel.app";
+        // --- 設定：整合你的專屬後端 ---
+        // Vercel 目前 404，但程式會自動跳過它去連 Render
+        const VERCEL_URL = "https://my-stock-api-blond.vercel.app"; 
         const RENDER_URL = "https://my-stock-api-g3bz.onrender.com";
 
         // --- 資料載入 ---
@@ -187,23 +188,48 @@
         function getItemColor(index) { return uniquePalette[index % uniquePalette.length]; }
         function getThemeColor(varName) { return getComputedStyle(document.documentElement).getPropertyValue(varName).trim(); }
 
-        // --- API 連線邏輯 ---
+        // --- API 連線邏輯 (強固版) ---
         async function fetchRace(endpoint) {
             const controller = new AbortController();
             const signal = controller.signal;
-            const vercelPromise = fetch(`${VERCEL_URL}${endpoint}`, { signal }).then(res => { if (!res.ok) throw new Error("Vercel error"); return res.json(); });
-            const startRender = () => fetch(`${RENDER_URL}${endpoint}`, { signal }).then(res => { if (!res.ok) throw new Error("Render error"); return res.json(); });
+
+            // 1. 定義 Vercel 請求
+            const vercelPromise = fetch(`${VERCEL_URL}${endpoint}`, { signal })
+                .then(res => { 
+                    if (!res.ok) throw new Error("Vercel error"); 
+                    return res.json(); 
+                });
+
+            // 2. 定義 Render 請求
+            const startRender = () => fetch(`${RENDER_URL}${endpoint}`, { signal })
+                .then(res => { 
+                    if (!res.ok) throw new Error("Render error"); 
+                    return res.json(); 
+                });
+
+            // 3. 延遲啟動機制
             const delayedRenderPromise = new Promise((resolve, reject) => {
-                setTimeout(() => { startRender().then(resolve).catch(reject); }, 3000); 
+                // 如果 1 秒內 Vercel 沒回應 (或直接 404 失敗)，就啟動 Render
+                setTimeout(() => { 
+                    startRender().then(resolve).catch(reject); 
+                }, 1000); 
             });
-            try { return await Promise.any([vercelPromise, delayedRenderPromise]); } catch (error) { return await startRender(); }
+
+            try {
+                // 等待任何一個成功
+                return await Promise.any([vercelPromise, delayedRenderPromise]);
+            } catch (error) {
+                // 如果全部失敗，最後再試一次 Render (確保喚醒)
+                console.warn("All servers failed initially, retrying Render...");
+                return await startRender();
+            }
         }
 
         async function updateAllPrices() {
             const btn = document.getElementById('loadingOverlay');
             const txt = document.getElementById('loadingText');
             btn.style.display = 'flex';
-            txt.innerText = "正在連線您的專屬主機...";
+            txt.innerText = "正在喚醒伺服器，可能需要 1 分鐘...";
             
             let updatedCount = 0;
             const uniqueSymbols = [...new Set(myAssets.map(a => a.symbol))];
@@ -227,7 +253,7 @@
             
             btn.style.display = 'none';
             render();
-            alert(`更新完成！共更新 ${updatedCount} 檔股票價格。`);
+            alert(`更新完成！共更新 ${updatedCount} 檔股票價格。\n(如果 Vercel 404，已自動切換至 Render)`);
         }
 
         // --- Chart 插件 ---
@@ -533,60 +559,3 @@
             txt.innerText = "高清渲染中...";
             element.classList.add('capturing'); const originalBg = element.style.backgroundColor; element.style.backgroundColor = getThemeColor('--bg-card');
             setTimeout(() => {
-                html2canvas(element, { scale: 5, backgroundColor: getThemeColor('--bg-card'), useCORS: true, logging: false, allowTaint: true, onclone: (clonedDoc) => { const clonedEl = clonedDoc.getElementById(element.id); if(clonedEl) clonedEl.style.transform = 'none'; } }).then(canvas => {
-                    loading.style.display = 'none'; element.classList.remove('capturing'); element.style.backgroundColor = originalBg; 
-                    const jpgUrl = canvas.toDataURL('image/jpeg', 1.0); const newWin = window.open('', '_blank');
-                    if (newWin) { newWin.document.write(`<html><head><title>${fileName}</title><style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background-color:#111}img{max-width:95%;height:auto;box-shadow:0 0 20px rgba(0,0,0,0.5);border-radius:12px}.tip{position:fixed;top:10px;left:50%;transform:translateX(-50%);color:#fff;background:rgba(0,0,0,0.7);padding:8px 16px;border-radius:20px;font-family:sans-serif;font-size:14px}</style></head><body><div class="tip">請長按圖片另存新檔</div><img src="${jpgUrl}"></body></html>`); newWin.document.close(); } else { alert('請允許彈出視窗'); }
-                }).catch(err => { console.error(err); loading.style.display = 'none'; element.classList.remove('capturing'); element.style.backgroundColor = originalBg; alert("失敗"); });
-            }, 100);
-        }
-        function downloadMasterChart() { const el = document.getElementById('masterChartBox'); const total = document.getElementById('grandTotal').innerText; captureAndOpenImage(el, `資產總覽_總值${total}萬`); }
-        function downloadChart(index) { const el = document.getElementById(`chart-box-${index}`); const title = chartConfigs[index].title || 'chart'; const val = (el.innerText.match(/：([\d\.]+) 萬/) || [])[1] || ''; captureAndOpenImage(el, `${title}_市值${val}萬`); }
-
-        function saveStock() {
-            const sym = document.getElementById('symbol').value.trim();
-            if(!sym) return;
-            const editId = document.getElementById('editId').value;
-            let existingCurrentPrice = 0;
-            if(editId) {
-                const exist = myAssets.find(i => i.id == editId);
-                if(exist) existingCurrentPrice = exist.currentPrice || 0;
-            }
-
-            const data = { 
-                id: editId ? parseInt(editId) : Date.now(), 
-                symbol: sym.toUpperCase(), 
-                fontSize: parseInt(document.getElementById('fontSize').value) || 12, 
-                shares: parseFloat(document.getElementById('shares').value) || 0, 
-                avgPrice: parseFloat(document.getElementById('avgPrice').value) || 0,
-                currentPrice: parseFloat(document.getElementById('currentPrice').value) || existingCurrentPrice, 
-                divRec: parseFloat(document.getElementById('divRec').value) || 0, 
-                gainRec: parseFloat(document.getElementById('gainRec').value) || 0, 
-                note: document.getElementById('note').value.trim() 
-            };
-            if (editId) { myAssets[myAssets.findIndex(i => i.id == editId)] = data; } 
-            else { myAssets.push(data); if (chartConfigs.length > 0) { if (!chartConfigs[0].selectedIds) chartConfigs[0].selectedIds = []; chartConfigs[0].selectedIds.push(data.id); } }
-            
-            ["editId", "symbol", "shares", "avgPrice", "currentPrice", "divRec", "gainRec", "note"].forEach(id => document.getElementById(id).value = (id.includes('Rec') ? 0 : ""));
-            document.getElementById('fontSize').value = 12;
-            render();
-        }
-        function editItem(id) {
-            const item = myAssets.find(i => i.id == id);
-            ["symbol", "fontSize", "shares", "avgPrice", "currentPrice", "divRec", "gainRec", "note"].forEach(k => document.getElementById(k).value = item[k] || (k.includes('Rec') ? 0 : ""));
-            document.getElementById('editId').value = item.id;
-            document.getElementById('inputArea').scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        function deleteItem(id) { if(confirm("刪除？")) { myAssets = myAssets.filter(i => i.id !== id); render(); } }
-
-        function copyToClipboard() { const d = btoa(encodeURIComponent(JSON.stringify({myAssets, chartConfigs}))); const textArea = document.createElement("textarea"); textArea.value = d; textArea.style.position = "fixed"; textArea.style.left = "-9999px"; textArea.style.top = "0"; document.body.appendChild(textArea); textArea.focus(); textArea.select(); try { const successful = document.execCommand('copy'); if (successful) alert("備份已複製！"); else prompt("複製失敗，請手動複製代碼：", d); } catch (err) { console.error('Fallback', err); prompt("複製失敗，請手動複製代碼：", d); } document.body.removeChild(textArea); }
-        function importFromText() { const c = prompt("代碼："); if(c) { try { const d = JSON.parse(decodeURIComponent(atob(c))); myAssets=d.myAssets; chartConfigs=d.chartConfigs; render(); } catch(e){ alert("錯誤"); } } }
-        function addNewChart() { const t = prompt("組別名稱："); if (t) { chartConfigs.push({ id: Date.now(), title: t, selectedIds: [], labelPos: 'outside' }); render(); } }
-        function deleteChart(idx) { if (confirm("刪除？")) { chartConfigs.splice(idx, 1); render(); } }
-        function toggleSortMode() { isSortMode = !isSortMode; const btn = document.getElementById('sortToggle'); const table = document.getElementById('mainTable'); if(isSortMode) { btn.innerText = "✓ 鎖定順序"; table.classList.add('sort-mode-active'); initSortable(); } else { btn.innerText = "⇅ 排序模式"; table.classList.remove('sort-mode-active'); if (sortable) sortable.destroy(); } }
-        function initSortable() { const el = document.getElementById('mainTable'); if (sortable) sortable.destroy(); sortable = Sortable.create(el, { handle: '.drag-handle', animation: 200, onEnd: () => { const newOrder = Array.from(el.querySelectorAll('.compact-row')).map(r => parseInt(r.dataset.id)); myAssets = newOrder.map(id => myAssets.find(a => a.id === id)); render(); } }); }
-        
-        window.onload = () => { Chart.register(ChartDataLabels); render(); };
-    </script>
-</body>
-</html>
