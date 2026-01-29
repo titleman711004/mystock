@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stock Dashboard Pro (Detail View)</title>
+    <title>Stock Dashboard Pro (Label Switch)</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,7 +33,7 @@
         [data-theme="purple"] { --bg-body: #180326; --bg-card: #3b0764; --bg-input: #581c87; --border-color: #a855f7; --text-main: #faf5ff; --text-sub: #d8b4fe; --chart-border: #180326; --input-text: #f3e8ff; --row-bg: #12021d; --row-border: #4a0d75; --tech-line: #c084fc; --tech-text-pct: #c084fc; --btn-bg: #3b0764; --btn-text: #d8b4fe; }
 
         body { background-color: var(--bg-body); color: var(--text-main); font-family: var(--font-main); transition: background-color 0.3s, color 0.3s; letter-spacing: 0.02em; }
-        .input-card { background: var(--bg-card); border-radius: 12px; padding: 16px; border: 2px solid var(--border-color); margin-bottom: 20px; scroll-margin-top: 20px; transition: background-color 0.3s, border-color 0.3s; }
+        .input-card { background: var(--bg-card); border-radius: 12px; padding: 16px; border: 2px solid var(--border-color); margin-bottom: 20px; transition: 0.3s; }
         .input-field { background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; color: var(--input-text) !important; font-size: 16px !important; width: 100%; transition: all 0.3s; font-family: var(--font-main); }
         .compact-row { background: var(--row-bg); border: 1px solid var(--row-border); margin-bottom: 8px; border-radius: 10px; display: flex; align-items: center; padding: 14px; min-height: 60px; transition: all 0.3s; flex-wrap: wrap; }
         .drag-handle { cursor: move; color: #3b82f6; width: 40px; display: none; align-items: center; justify-content: center; font-size: 20px; background: rgba(59, 130, 246, 0.1); border-radius: 6px; margin-right: 12px; }
@@ -67,7 +67,7 @@
         .hidden-in-view-mode { display: block; }
         .view-mode-active .hidden-in-view-mode { display: none !important; }
         
-        /* 新增：檢視模式專用顯示 (圓餅圖下方對照表) */
+        /* 檢視模式專用顯示 */
         .show-in-view-mode { display: none; }
         .view-mode-active .show-in-view-mode { display: block !important; }
 
@@ -92,10 +92,13 @@
                 <div class="flex items-center">
                     <h2 class="text-3xl font-black text-blue-500 italic text-center tracking-tighter">DASHBOARD <span class="text-xs text-yellow-400 not-italic ml-1 font-bold" style="text-shadow: 0 0 10px #facc15, 0 0 20px #854d0e;">PRO</span></h2>
                 </div>
-                <div class="flex items-center gap-1 mt-1">
-                    <p class="text-[10px] text-white tracking-widest font-medium">Designed by Titleman</p>
+                <div class="flex items-center gap-1 mt-1 flex-wrap">
+                    <p class="text-[10px] text-white tracking-widest font-medium mr-1">Designed by Titleman</p>
                     <button onclick="cycleTheme()" class="text-xs px-2 py-0.5 rounded border border-slate-600 bg-slate-800 text-slate-300 hover:text-white transition-all whitespace-nowrap font-medium hidden-in-view-mode">
                         <span id="themeName">預設</span>
+                    </button>
+                    <button onclick="toggleLabelMode()" id="labelModeBtn" class="text-xs px-2 py-0.5 rounded border border-pink-600 bg-pink-900 text-pink-200 hover:text-white transition-all whitespace-nowrap font-medium">
+                        🔤 顯示：代號
                     </button>
                     <button onclick="toggleEditMode()" id="modeBtn" class="text-xs px-2 py-0.5 rounded border border-blue-600 bg-blue-900 text-blue-200 hover:text-white transition-all whitespace-nowrap font-medium">
                         ✏️ 編輯
@@ -207,7 +210,8 @@
 
         let masterLabelPos = localStorage.getItem('masterLabelPosV1') || 'outside';
         let currentTheme = localStorage.getItem('appThemeV1') || 'dark';
-        let isEditMode = localStorage.getItem('editModeV1') !== 'false'; 
+        let isEditMode = localStorage.getItem('editModeV1') !== 'false';
+        let labelDisplayMode = localStorage.getItem('labelDisplayModeV1') || 'symbol'; // 'symbol' or 'note'
         
         let chartInstances = {};
         let masterChartInstance = null;
@@ -377,14 +381,40 @@
 
         function applyEditMode() {
             const btn = document.getElementById('modeBtn');
+            const lblBtn = document.getElementById('labelModeBtn');
             if (isEditMode) {
                 document.body.classList.remove('view-mode-active');
                 btn.innerHTML = '返回';
                 btn.classList.replace('text-white', 'text-blue-200');
+                lblBtn.classList.add('hidden-in-view-mode');
             } else {
                 document.body.classList.add('view-mode-active');
                 btn.innerHTML = '編輯';
                 btn.classList.replace('text-blue-200', 'text-white');
+                lblBtn.classList.remove('hidden-in-view-mode');
+            }
+        }
+
+        // 新增：切換標籤顯示模式
+        function toggleLabelMode() {
+            labelDisplayMode = (labelDisplayMode === 'symbol') ? 'note' : 'symbol';
+            localStorage.setItem('labelDisplayModeV1', labelDisplayMode);
+            updateLabelModeBtn();
+            render();
+        }
+
+        function updateLabelModeBtn() {
+            const btn = document.getElementById('labelModeBtn');
+            if (labelDisplayMode === 'note') {
+                btn.innerHTML = '🔤 顯示：名稱';
+                btn.classList.replace('border-pink-600', 'border-teal-500');
+                btn.classList.replace('bg-pink-900', 'bg-teal-900');
+                btn.classList.replace('text-pink-200', 'text-teal-200');
+            } else {
+                btn.innerHTML = '🔤 顯示：代號';
+                btn.classList.replace('border-teal-500', 'border-pink-600');
+                btn.classList.replace('bg-teal-900', 'bg-pink-900');
+                btn.classList.replace('text-teal-200', 'text-pink-200');
             }
         }
 
@@ -395,6 +425,7 @@
 
             if(!document.documentElement.getAttribute('data-theme')) applyTheme(currentTheme);
             applyEditMode(); 
+            updateLabelModeBtn();
 
             const chartBorderColor = getThemeColor('--chart-border');
             const textColor = getThemeColor('--text-main');
@@ -443,9 +474,7 @@
                 let groupTotal = 0;
                 let groupAnnualDiv = 0;
                 let groupCostBasis = 0;
-                
-                // 新增：收集該圖表的對照表資料 (Legend)
-                let legendItems = '';
+                let legendItems = ''; // 檢視模式清單
 
                 conf.selectedIds.forEach(sid => {
                     const a = myAssets.find(item => item.id == sid);
@@ -463,7 +492,7 @@
                         }
                         groupCostBasis += (shares * 1000 * avgPrice);
 
-                        // 建立對照表項目 (只在非編輯模式顯示)
+                        // 建立檢視模式對照表
                         const stockColor = getItemColor(myAssets.findIndex(ma => ma.id == sid));
                         const noteText = a.note ? a.note : '-';
                         legendItems += `
@@ -576,7 +605,6 @@
                     const plClass = unrealizedPL >= 0 ? 'text-gain' : 'text-loss';
                     const plSign = unrealizedPL >= 0 ? '+' : '';
                     
-                    // 修正：細到百位數，顯示小數點後兩位 (1.23萬)
                     plHtml = `
                         <div class="flex justify-between items-center text-xs mt-2 border-t border-slate-700/50 pt-1.5">
                             <span class="text-slate-400">現價 <span class="text-white font-bold ml-1 font-num">${currentPrice}</span></span>
@@ -638,7 +666,17 @@
                         const s = myAssets[idx];
                         const netCost = (s.avgPrice * s.shares * 1000) - (s.divRec || 0) - (s.gainRec || 0);
                         dData.push(netCost > 0 ? netCost : 1);
-                        dLabels.push(s.symbol); dShares.push(s.shares); dColors.push(getItemColor(idx)); dFontSizes.push(s.fontSize || 12);
+                        
+                        // 修正：依據使用者選擇 (labelDisplayMode) 決定圓餅圖顯示文字
+                        let labelText = s.symbol;
+                        if (labelDisplayMode === 'note' && s.note) {
+                            labelText = s.note;
+                        }
+                        dLabels.push(labelText);
+                        
+                        dShares.push(s.shares); 
+                        dColors.push(getItemColor(idx)); 
+                        dFontSizes.push(s.fontSize || 12);
                     }
                 });
                 if (chartInstances[i]) chartInstances[i].destroy();
@@ -655,7 +693,8 @@
                                 color: (ctx) => '#ffffff', textAlign: 'center', display: true, anchor: currentPos === 'outside' ? 'end' : 'center', align: currentPos === 'outside' ? 'end' : 'center', offset: currentPos === 'outside' ? 4 : 0, font: (ctx) => ({ weight: 'bold', size: dFontSizes[ctx.dataIndex], family: '"Noto Sans TC", sans-serif' }), formatter: (val, ctx) => ctx.chart.data.labels[ctx.dataIndex] + '\n' + dShares[ctx.dataIndex] + '張'
                             }
                         }
-                    }
+                    },
+                    plugins: (masterLabelPos === 'outside') ? [techLabelsPlugin] : []
                 });
             });
         }
@@ -713,7 +752,7 @@
             }, 100);
         }
 
-        function copyToClipboard() { const d = btoa(encodeURIComponent(JSON.stringify({myAssets, chartConfigs}))); const textArea = document.createElement("textarea"); textArea.value = d; textArea.style.position = "fixed"; textArea.style.left = "-9999px"; textArea.style.top = "0"; document.body.appendChild(textArea); textArea.focus(); textArea.select(); try { const successful = document.execCommand('copy'); if (successful) alert("備份已複製！"); else prompt("複製失敗，請手動複製代碼：", d); } catch (err) { console.error('Fallback', err); prompt("複製失敗，請手動複製代碼：", d); } document.body.removeChild(textArea); }
+        function copyToClipboard() { const d = btoa(encodeURIComponent(JSON.stringify({myAssets, chartConfigs}))); const textArea = document.createElement("textarea"); textArea.value = d; textArea.style.position = "fixed"; textArea.style.left = "-9999px"; textArea.style.top = "0"; document.body.appendChild(textArea); textArea.focus(); textArea.select(); try { const successful = document.execCommand('copy'); if ( successful) alert("備份已複製！"); else prompt("複製失敗，請手動複製代碼：", d); } catch (err) { console.error('Fallback', err); prompt("複製失敗，請手動複製代碼：", d); } document.body.removeChild(textArea); }
         function importFromText() { const c = prompt("代碼："); if(c) { try { const d = JSON.parse(decodeURIComponent(atob(c))); myAssets=d.myAssets; chartConfigs=d.chartConfigs; render(); } catch(e){ alert("錯誤"); } } }
         function toggleSortMode() { isSortMode = !isSortMode; const btn = document.getElementById('sortToggle'); const table = document.getElementById('mainTable'); if(isSortMode) { btn.innerText = "✓ 鎖定順序"; table.classList.add('sort-mode-active'); initSortable(); } else { btn.innerText = "⇅ 排序模式"; table.classList.remove('sort-mode-active'); if (sortable) sortable.destroy(); } }
         function initSortable() { const el = document.getElementById('mainTable'); if (sortable) sortable.destroy(); sortable = Sortable.create(el, { handle: '.drag-handle', animation: 200, onEnd: () => { const newOrder = Array.from(el.querySelectorAll('.compact-row')).map(r => parseInt(r.dataset.id)); myAssets = newOrder.map(id => myAssets.find(a => a.id === id)); render(); } }); }
