@@ -43,6 +43,7 @@
         .chart-box { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color); padding: 15px; margin-bottom: 12px; position: relative; transition: background-color 0.3s, border-color 0.3s; padding-top: 40px; }
         .master-chart-box { border: 2px solid #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.15); padding-top: 15px; }
         
+        /* 增加 cursor pointer 提示可點擊 */
         .chart-container { height: 400px; min-height: 400px; position: relative; width: 100%; cursor: pointer; }
         .master-container { height: 480px; min-height: 480px; position: relative; width: 100%; cursor: pointer; }
 
@@ -50,13 +51,14 @@
         .screenshot-hide { opacity: 1; transition: opacity 0.2s; }
         .capturing .screenshot-hide { opacity: 0 !important; visibility: hidden !important; }
 
-        /* 按鈕樣式 */
         .btn-icon { background: var(--btn-bg); color: var(--btn-text); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
         .btn-icon:hover { color: var(--text-main); border-color: var(--text-main); background: var(--border-color); transform: scale(1.05); }
+        
+        /* 右上角工具列 */
         .btn-toolbar-group { display: flex; gap: 6px; position: absolute; top: 12px; right: 12px; z-index: 10; }
+        /* 左上角刪除鈕 */
         .btn-delete-pos { position: absolute; top: 12px; left: 12px; z-index: 10; }
         
-        /* 載入動畫 */
         #loadingOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85); z-index: 9999;
@@ -65,7 +67,6 @@
         .spinner { width: 40px; height: 40px; border: 4px solid #3b82f6; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
         @keyframes spin { to { transform: rotate(360deg); } }
         
-        /* 還原資料面板 */
         #importModal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); z-index: 9998;
@@ -90,7 +91,7 @@
 
     <div id="loadingOverlay">
         <div class="spinner"></div>
-        <div class="text-blue-400 font-bold tracking-widest" id="loadingText">Processing...</div>
+        <div class="text-blue-400 font-bold tracking-widest" id="loadingText">Connecting...</div>
     </div>
 
     <div id="importModal">
@@ -126,7 +127,7 @@
                 </button>
                 <button onclick="addNewChart()" class="bg-blue-600 text-white text-[10px] px-4 py-2 rounded-lg font-bold whitespace-nowrap shadow-lg hover:scale-105 transition tracking-wide hidden-in-view-mode">+ 分組</button>
                 <button onclick="copyToClipboard()" class="bg-emerald-700 text-white text-[10px] px-4 py-2 rounded-lg font-bold whitespace-nowrap shadow-lg hover:scale-105 transition tracking-wide hidden-in-view-mode">備份</button>
-                <button onclick="openImportModal()" class="bg-slate-700 text-white text-[10px] px-4 py-2 rounded-lg font-bold whitespace-nowrap shadow-lg hover:scale-105 transition tracking-wide hidden-in-view-mode">還原</button>
+                <button onclick="importFromText()" class="bg-slate-700 text-white text-[10px] px-4 py-2 rounded-lg font-bold whitespace-nowrap shadow-lg hover:scale-105 transition tracking-wide hidden-in-view-mode">還原</button>
             </div>
         </header>
 
@@ -222,9 +223,10 @@
         let myAssets = loadRobustData('myAssetsV112', assetKeys, []);
         let chartConfigs = loadRobustData('chartConfigsV112', configKeys, [{ id: Date.now(), title: '主要配置', selectedIds: [], labelPos: 'inside', labelContent: 'symbol' }]);
         
+        // 修正：預設值強制為 inside
         chartConfigs.forEach(c => { 
             if (!c.selectedIds) c.selectedIds = [];
-            if (!c.labelPos || c.labelPos === 'outside') c.labelPos = 'inside'; // 強制預設 inside
+            if (!c.labelPos || c.labelPos === 'outside') c.labelPos = 'inside'; // 強制 inside，移除周圍標籤
             if (!c.labelContent) c.labelContent = 'symbol'; 
         });
         myAssets.forEach(a => { if(typeof a.currentPrice === 'undefined') a.currentPrice = 0; });
@@ -290,7 +292,6 @@
         function closeImportModal() { document.getElementById('importModal').style.display = 'none'; document.getElementById('importTextarea').value = ''; }
         function confirmImport() {
             let c = document.getElementById('importTextarea').value;
-            // 自動修復：移除空白、換行
             c = c.replace(/\s/g, ''); 
             if(c) { 
                 try { 
@@ -302,7 +303,6 @@
                     alert("✅ 還原成功！");
                 } catch(e){ 
                     console.error(e);
-                    // 嘗試智慧修復：補齊 = 號
                     try {
                         const padded = c.padEnd(c.length + (4 - c.length % 4) % 4, '=');
                         const d = JSON.parse(decodeURIComponent(atob(padded)));
@@ -322,8 +322,7 @@
         const techLabelsPlugin = {
             id: 'techLabels',
             afterDatasetsDraw(chart, args, options) {
-               // 此插件僅在 outside 模式下繪製，但現在預設 inside，所以這裡通常不會執行到
-               // 保留代碼以防使用者手動切換到 outside
+               // 僅在 outside 模式下繪製，預設 inside 時不執行
                const { ctx, chartArea: { top, bottom, left, right, width, height } } = chart;
                 const lineColor = getThemeColor('--tech-line');
                 const pctColor = getThemeColor('--tech-text-pct');
@@ -448,13 +447,13 @@
             }
         }
 
-        // 點擊圖表切換顯示內容 (使用 setTimeout 解決衝突)
+        // 修改：使用 setTimeout 延遲執行，避免點擊時重繪導致的 Crash
         function toggleChartLabelContent(index) {
             setTimeout(() => {
                 const current = chartConfigs[index].labelContent || 'symbol';
                 chartConfigs[index].labelContent = (current === 'symbol') ? 'note' : 'symbol';
                 render();
-            }, 50);
+            }, 10); // 輕微延遲即可解決
         }
 
         function render() {
@@ -465,7 +464,7 @@
             if(!document.documentElement.getAttribute('data-theme')) applyTheme(currentTheme);
             applyEditMode(); 
 
-            // ⚠️ 重要修復：重繪前先銷毀所有舊圖表
+            // ⚠️ 關鍵修復：在重繪 HTML 之前，必須先銷毀所有舊圖表實例
             if (masterChartInstance) { masterChartInstance.destroy(); masterChartInstance = null; }
             Object.values(chartInstances).forEach(chart => chart.destroy());
             chartInstances = {};
@@ -585,7 +584,7 @@
                             </div>
                         </div>
                         
-                        <div class="chart-container" onclick="toggleChartLabelContent(${i})" title="點擊圖表切換顯示 代號 / 名稱"><canvas id="canvas-${i}"></canvas></div>
+                        <div class="chart-container" title="點擊圖表切換 代號/中文"><canvas id="canvas-${i}"></canvas></div>
                         
                         <div class="show-in-view-mode mt-4 px-2 bg-slate-800/20 rounded-lg">
                             ${legendItems || '<div class="text-xs text-slate-600 text-center py-2">無資料</div>'}
@@ -595,6 +594,7 @@
 
             document.getElementById('chartsWrapper').innerHTML = chartsHTML;
 
+            // 繪製 Master Chart
             const masterWrapper = document.getElementById('masterChartWrapper');
             if(grandTotal > 0) {
                 masterWrapper.classList.remove('hidden');
@@ -671,6 +671,8 @@
                     estAnnual = shares * 1000 * amt * freq;
                 }
 
+                const displayName = item.note ? `${item.symbol} ${item.note}` : item.symbol;
+
                 listHTML += `
                     <div class="compact-row" data-id="${item.id}">
                         <div class="drag-handle">☰</div>
@@ -730,8 +732,10 @@
                     type: 'pie',
                     data: { labels: dLabels, datasets: [{ data: dData, backgroundColor: dColors, borderWidth: 1, borderColor: chartBorderColor }]},
                     options: {
-                        // 重要：移除 Chart.js 預設的 onClick，改由外層 div 處理，避免衝突
-                        onClick: null, 
+                        // 重要：綁定 Chart.js 的 onClick，使用箭頭函式傳遞索引 i
+                        onClick: (e) => { 
+                            toggleChartLabelContent(i);
+                        },
                         devicePixelRatio: 3, responsive: true, maintainAspectRatio: false, 
                         radius: isMobile ? '50%' : '90%', 
                         layout: { padding: (currentPos === 'outside') ? (window.innerWidth < 480 ? 60 : 40) : 20 },
@@ -759,40 +763,14 @@
         }
 
         function toggleMasterLabelPos() { masterLabelPos = (masterLabelPos === 'outside') ? 'inside' : 'outside'; render(); }
-        function toggleChartLabelPos(index) { const current = chartConfigs[index].labelPos || 'inside'; chartConfigs[index].labelPos = (current === 'outside') ? 'inside' : 'outside'; render(); }
-        
+        function toggleChartLabelPos(index) { const current = chartConfigs[index].labelPos || 'outside'; chartConfigs[index].labelPos = (current === 'outside') ? 'inside' : 'outside'; render(); }
         function downloadMasterChart() { const el = document.getElementById('masterChartBox'); const total = document.getElementById('grandTotal').innerText; captureAndOpenImage(el, `資產總覽_總值${total}萬`); }
         function downloadChart(index) { const el = document.getElementById(`chart-box-${index}`); const title = chartConfigs[index].title || 'chart'; const val = (el.innerText.match(/市值：([\d\.]+) 萬/) || [])[1] || ''; captureAndOpenImage(el, `${title}_市值${val}萬`); }
 
         function captureAndOpenImage(element, fileName) {
             const loading = document.getElementById('loadingOverlay'); loading.style.display = 'flex'; element.classList.add('capturing'); const originalBg = element.style.backgroundColor; element.style.backgroundColor = getThemeColor('--bg-card');
             setTimeout(() => {
-                html2canvas(element, { 
-                    scale: 5, 
-                    backgroundColor: getThemeColor('--bg-card'), 
-                    useCORS: true, 
-                    logging: false, 
-                    allowTaint: true, 
-                    onclone: (clonedDoc) => {
-                        const clonedEl = clonedDoc.getElementById(element.id);
-                        if (clonedEl) {
-                            clonedEl.style.transform = 'none';
-                            const input = clonedEl.querySelector('input.title-input');
-                            if (input) {
-                                const h3 = clonedDoc.createElement('h3');
-                                h3.textContent = input.value;
-                                h3.className = "font-black text-center w-full mb-1 text-xl tracking-wide";
-                                h3.style.fontFamily = "'Noto Sans TC'";
-                                h3.style.color = input.style.color;
-                                h3.style.display = 'flex';
-                                h3.style.justifyContent = 'center';
-                                h3.style.alignItems = 'center';
-                                h3.style.margin = '0 auto 4px auto'; 
-                                input.replaceWith(h3);
-                            }
-                        }
-                    }
-                }).then(canvas => {
+                html2canvas(element, { scale: 5, backgroundColor: getThemeColor('--bg-card'), useCORS: true, logging: false, allowTaint: true, onclone: (clonedDoc) => { const clonedEl = clonedDoc.getElementById(element.id); if(clonedEl) clonedEl.style.transform = 'none'; } }).then(canvas => {
                     loading.style.display = 'none'; element.classList.remove('capturing'); element.style.backgroundColor = originalBg; 
                     const jpgUrl = canvas.toDataURL('image/jpeg', 1.0); const newWin = window.open('', '_blank');
                     if (newWin) { newWin.document.write(`<html><head><title>${fileName}</title><style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background-color:#111}img{max-width:95%;height:auto;box-shadow:0 0 20px rgba(0,0,0,0.5);border-radius:12px}.tip{position:fixed;top:10px;left:50%;transform:translateX(-50%);color:#fff;background:rgba(0,0,0,0.7);padding:8px 16px;border-radius:20px;font-family:sans-serif;font-size:14px}</style></head><body><div class="tip">請長按圖片或右鍵另存</div><img src="${jpgUrl}"></body></html>`); newWin.document.close(); } else { alert('請允許彈出視窗'); }
@@ -809,35 +787,16 @@
             const sym = document.getElementById('symbol').value.trim();
             if(!sym) return;
             const editId = document.getElementById('editId').value;
-            const data = { 
-                id: editId ? parseInt(editId) : Date.now(), 
-                symbol: sym.toUpperCase(), 
-                fontSize: parseInt(document.getElementById('fontSize').value) || 12, 
-                shares: parseFloat(document.getElementById('shares').value) || 0, 
-                avgPrice: parseFloat(document.getElementById('avgPrice').value) || 0, 
-                currentPrice: parseFloat(document.getElementById('currentPrice').value) || 0,
-                divRec: parseFloat(document.getElementById('divRec').value) || 0, 
-                gainRec: parseFloat(document.getElementById('gainRec').value) || 0, 
-                divFreq: parseInt(document.getElementById('divFreq').value) || 0,
-                divAmt: parseFloat(document.getElementById('divAmt').value) || 0,
-                includeInMonthly: document.getElementById('includeInMonthly').checked,
-                note: document.getElementById('note').value.trim() 
-            };
+            const data = { id: editId ? parseInt(editId) : Date.now(), symbol: sym.toUpperCase(), fontSize: parseInt(document.getElementById('fontSize').value) || 12, shares: parseFloat(document.getElementById('shares').value) || 0, avgPrice: parseFloat(document.getElementById('avgPrice').value) || 0, divRec: parseFloat(document.getElementById('divRec').value) || 0, gainRec: parseFloat(document.getElementById('gainRec').value) || 0, note: document.getElementById('note').value.trim() };
             if (editId) { myAssets[myAssets.findIndex(i => i.id == editId)] = data; } else { myAssets.push(data); if (chartConfigs.length > 0) { if (!chartConfigs[0].selectedIds) chartConfigs[0].selectedIds = []; chartConfigs[0].selectedIds.push(data.id); } }
-            ["editId", "symbol", "shares", "avgPrice", "currentPrice", "divRec", "gainRec", "note", "divAmt"].forEach(id => document.getElementById(id).value = (id.includes('Rec') || id === 'divAmt' || id === 'currentPrice' ? 0 : ""));
+            ["editId", "symbol", "shares", "avgPrice", "divRec", "gainRec", "note"].forEach(id => document.getElementById(id).value = (id.includes('Rec') ? 0 : ""));
             document.getElementById('fontSize').value = 12;
-            document.getElementById('divFreq').value = 1; 
-            document.getElementById('includeInMonthly').checked = true;
             render();
         }
 
         function editItem(id) {
             const item = myAssets.find(i => i.id == id);
-            ["symbol", "fontSize", "shares", "avgPrice", "currentPrice", "divRec", "gainRec", "note", "divAmt", "divFreq"].forEach(k => {
-                const el = document.getElementById(k);
-                if(el) el.value = item[k] || (k === 'divAmt' || k.includes('Rec') || k === 'currentPrice' ? 0 : "");
-            });
-            document.getElementById('includeInMonthly').checked = (item.includeInMonthly !== false);
+            ["symbol", "fontSize", "shares", "avgPrice", "divRec", "gainRec", "note"].forEach(k => document.getElementById(k).value = item[k] || (k.includes('Rec') ? 0 : ""));
             document.getElementById('editId').value = item.id;
             document.getElementById('inputArea').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
