@@ -40,22 +40,23 @@
         .sort-mode-active .drag-handle { display: flex; }
         .num-dot { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; border: 1px solid transparent; }
         
-        .chart-box { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color); padding: 15px; margin-bottom: 12px; position: relative; transition: background-color 0.3s, border-color 0.3s; padding-top: 40px; /* 增加上方空間給按鈕 */ }
+        .chart-box { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color); padding: 15px; margin-bottom: 12px; position: relative; transition: background-color 0.3s, border-color 0.3s; padding-top: 40px; }
         .master-chart-box { border: 2px solid #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.15); padding-top: 15px; }
         
-        .chart-container { height: 400px; min-height: 400px; position: relative; width: 100%; }
-        .master-container { height: 480px; min-height: 480px; position: relative; width: 100%; }
+        .chart-container { height: 400px; min-height: 400px; position: relative; width: 100%; cursor: pointer; }
+        .master-container { height: 480px; min-height: 480px; position: relative; width: 100%; cursor: pointer; }
 
         .note-legend { margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 12px; font-size: 13px; color: var(--text-sub); text-align: center; line-height: 1.6; }
         .screenshot-hide { opacity: 1; transition: opacity 0.2s; }
         .capturing .screenshot-hide { opacity: 0 !important; visibility: hidden !important; }
 
-        /* 按鈕樣式優化 */
+        /* 按鈕樣式 */
         .btn-icon { background: var(--btn-bg); color: var(--btn-text); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
         .btn-icon:hover { color: var(--text-main); border-color: var(--text-main); background: var(--border-color); transform: scale(1.05); }
         .btn-toolbar-group { display: flex; gap: 6px; position: absolute; top: 12px; right: 12px; z-index: 10; }
         .btn-delete-pos { position: absolute; top: 12px; left: 12px; z-index: 10; }
         
+        /* 載入動畫 */
         #loadingOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85); z-index: 9999;
@@ -64,6 +65,13 @@
         .spinner { width: 40px; height: 40px; border: 4px solid #3b82f6; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
         @keyframes spin { to { transform: rotate(360deg); } }
         
+        /* 還原資料面板 */
+        #importModal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 9998;
+            display: none; justify-content: center; align-items: center; flex-direction: column; padding: 20px;
+        }
+
         select.input-field { -webkit-appearance: none; appearance: none; }
         .hidden-in-view-mode { display: block; }
         .view-mode-active .hidden-in-view-mode { display: none !important; }
@@ -82,7 +90,17 @@
 
     <div id="loadingOverlay">
         <div class="spinner"></div>
-        <div class="text-blue-400 font-bold tracking-widest" id="loadingText">Connecting...</div>
+        <div class="text-blue-400 font-bold tracking-widest" id="loadingText">Processing...</div>
+    </div>
+
+    <div id="importModal">
+        <h3 class="text-white font-bold text-xl mb-4">還原備份資料</h3>
+        <p class="text-slate-400 text-xs mb-2 text-center">請將代碼 (JTdC 開頭) 貼在下方，系統會自動修復格式：</p>
+        <textarea id="importTextarea" class="w-full max-w-2xl h-48 bg-slate-800 text-white p-4 rounded-xl border border-slate-600 mb-4 text-xs font-mono focus:outline-none focus:border-blue-500" placeholder="在此貼上代碼..."></textarea>
+        <div class="flex gap-4 w-full max-w-2xl">
+            <button onclick="confirmImport()" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-lg font-bold transition">確認還原</button>
+            <button onclick="closeImportModal()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-lg font-bold transition">取消</button>
+        </div>
     </div>
 
     <div class="max-w-7xl mx-auto">
@@ -108,7 +126,7 @@
                 </button>
                 <button onclick="addNewChart()" class="bg-blue-600 text-white text-[10px] px-4 py-2 rounded-lg font-bold whitespace-nowrap shadow-lg hover:scale-105 transition tracking-wide hidden-in-view-mode">+ 分組</button>
                 <button onclick="copyToClipboard()" class="bg-emerald-700 text-white text-[10px] px-4 py-2 rounded-lg font-bold whitespace-nowrap shadow-lg hover:scale-105 transition tracking-wide hidden-in-view-mode">備份</button>
-                <button onclick="importFromText()" class="bg-slate-700 text-white text-[10px] px-4 py-2 rounded-lg font-bold whitespace-nowrap shadow-lg hover:scale-105 transition tracking-wide hidden-in-view-mode">還原</button>
+                <button onclick="openImportModal()" class="bg-slate-700 text-white text-[10px] px-4 py-2 rounded-lg font-bold whitespace-nowrap shadow-lg hover:scale-105 transition tracking-wide hidden-in-view-mode">還原</button>
             </div>
         </header>
 
@@ -132,6 +150,7 @@
                         <div class="text-lg font-black text-rose-400 tracking-tight whitespace-nowrap font-num"><span id="portfolioYield">0.0</span>%</div>
                     </div>
                 </div>
+                
                 <div class="btn-toolbar-group screenshot-hide">
                     <button onclick="toggleMasterLabelPos()" class="btn-icon w-8 h-8 rounded-full font-bold text-lg" title="切換 內/外">◐</button>
                     <button onclick="downloadMasterChart()" class="btn-icon w-8 h-8 rounded-full" title="另開高畫質圖檔">📷</button>
@@ -205,7 +224,7 @@
         
         chartConfigs.forEach(c => { 
             if (!c.selectedIds) c.selectedIds = [];
-            if (!c.labelPos || c.labelPos === 'outside') c.labelPos = 'inside';
+            if (!c.labelPos || c.labelPos === 'outside') c.labelPos = 'inside'; // 強制預設 inside
             if (!c.labelContent) c.labelContent = 'symbol'; 
         });
         myAssets.forEach(a => { if(typeof a.currentPrice === 'undefined') a.currentPrice = 0; });
@@ -266,10 +285,46 @@
             alert(`更新完成！共更新 ${updatedCount} 檔股票現價。\n(如果失敗請檢查代號是否為純數字)`);
         }
 
+        // --- 強力還原函式 ---
+        function openImportModal() { document.getElementById('importModal').style.display = 'flex'; }
+        function closeImportModal() { document.getElementById('importModal').style.display = 'none'; document.getElementById('importTextarea').value = ''; }
+        function confirmImport() {
+            let c = document.getElementById('importTextarea').value;
+            // 自動修復：移除空白、換行
+            c = c.replace(/\s/g, ''); 
+            if(c) { 
+                try { 
+                    const d = JSON.parse(decodeURIComponent(atob(c))); 
+                    myAssets=d.myAssets; 
+                    chartConfigs=d.chartConfigs; 
+                    render(); 
+                    closeImportModal();
+                    alert("✅ 還原成功！");
+                } catch(e){ 
+                    console.error(e);
+                    // 嘗試智慧修復：補齊 = 號
+                    try {
+                        const padded = c.padEnd(c.length + (4 - c.length % 4) % 4, '=');
+                        const d = JSON.parse(decodeURIComponent(atob(padded)));
+                        myAssets=d.myAssets; 
+                        chartConfigs=d.chartConfigs; 
+                        render();
+                        closeImportModal();
+                        alert("✅ 還原成功 (已自動修復格式)！");
+                    } catch(e2) {
+                        alert("❌ 還原失敗：代碼格式錯誤，請確認您已複製完整代碼。"); 
+                    }
+                } 
+            }
+        }
+        function importFromText() { openImportModal(); } 
+
         const techLabelsPlugin = {
             id: 'techLabels',
             afterDatasetsDraw(chart, args, options) {
-                const { ctx, chartArea: { top, bottom, left, right, width, height } } = chart;
+               // 此插件僅在 outside 模式下繪製，但現在預設 inside，所以這裡通常不會執行到
+               // 保留代碼以防使用者手動切換到 outside
+               const { ctx, chartArea: { top, bottom, left, right, width, height } } = chart;
                 const lineColor = getThemeColor('--tech-line');
                 const pctColor = getThemeColor('--tech-text-pct');
                 const textColor = getThemeColor('--text-main');
@@ -393,11 +448,13 @@
             }
         }
 
+        // 點擊圖表切換顯示內容 (使用 setTimeout 解決衝突)
         function toggleChartLabelContent(index) {
-            // 切換邏輯： symbol -> note -> symbol
-            const current = chartConfigs[index].labelContent || 'symbol';
-            chartConfigs[index].labelContent = (current === 'symbol') ? 'note' : 'symbol';
-            render();
+            setTimeout(() => {
+                const current = chartConfigs[index].labelContent || 'symbol';
+                chartConfigs[index].labelContent = (current === 'symbol') ? 'note' : 'symbol';
+                render();
+            }, 50);
         }
 
         function render() {
@@ -408,7 +465,7 @@
             if(!document.documentElement.getAttribute('data-theme')) applyTheme(currentTheme);
             applyEditMode(); 
 
-            // 安全銷毀舊圖表
+            // ⚠️ 重要修復：重繪前先銷毀所有舊圖表
             if (masterChartInstance) { masterChartInstance.destroy(); masterChartInstance = null; }
             Object.values(chartInstances).forEach(chart => chart.destroy());
             chartInstances = {};
@@ -505,14 +562,9 @@
                     ? `<input type="text" onchange="chartConfigs[${i}].title=this.value;render()" value="${conf.title}" class="title-input font-black text-center w-full mb-1 text-xl" style="font-family:'Noto Sans TC'; ${headerColorStyle}">`
                     : `<h3 class="font-black text-center w-full mb-1 text-xl tracking-wide" style="font-family:'Noto Sans TC'; ${headerColorStyle}">${conf.title}</h3>`;
 
-                // 決定 Aa 按鈕的文字 (目前顯示什麼)
-                const currentLabelMode = conf.labelContent || 'symbol';
-                const aaBtnText = currentLabelMode === 'symbol' ? 'Aa' : '123';
-
                 chartsHTML += `
                     <div class="chart-box" id="chart-box-${i}">
                         <div class="btn-toolbar-group screenshot-hide">
-                            <button onclick="toggleChartLabelContent(${i})" class="btn-icon w-8 h-8 rounded-full font-bold text-xs" title="切換顯示：代號/中文">${aaBtnText}</button>
                             <button onclick="toggleChartLabelPos(${i})" class="btn-icon w-8 h-8 rounded-full font-bold text-lg" title="切換位置：內/外">◐</button>
                             <button onclick="downloadChart(${i})" class="btn-icon w-8 h-8 rounded-full" title="另開高畫質圖檔">📷</button>
                         </div>
@@ -533,7 +585,8 @@
                             </div>
                         </div>
                         
-                        <div class="chart-container"><canvas id="canvas-${i}"></canvas></div>
+                        <div class="chart-container" onclick="toggleChartLabelContent(${i})" title="點擊圖表切換顯示 代號 / 名稱"><canvas id="canvas-${i}"></canvas></div>
+                        
                         <div class="show-in-view-mode mt-4 px-2 bg-slate-800/20 rounded-lg">
                             ${legendItems || '<div class="text-xs text-slate-600 text-center py-2">無資料</div>'}
                         </div>
@@ -542,7 +595,6 @@
 
             document.getElementById('chartsWrapper').innerHTML = chartsHTML;
 
-            // 繪製 Master Chart
             const masterWrapper = document.getElementById('masterChartWrapper');
             if(grandTotal > 0) {
                 masterWrapper.classList.remove('hidden');
@@ -660,6 +712,7 @@
                         dData.push(netCost > 0 ? netCost : 1);
                         
                         let labelText = s.symbol;
+                        // 判定顯示文字：如果是 note 模式且有填寫 note，就顯示中文
                         if (conf.labelContent === 'note' && s.note) {
                             labelText = s.note;
                         }
@@ -677,6 +730,8 @@
                     type: 'pie',
                     data: { labels: dLabels, datasets: [{ data: dData, backgroundColor: dColors, borderWidth: 1, borderColor: chartBorderColor }]},
                     options: {
+                        // 重要：移除 Chart.js 預設的 onClick，改由外層 div 處理，避免衝突
+                        onClick: null, 
                         devicePixelRatio: 3, responsive: true, maintainAspectRatio: false, 
                         radius: isMobile ? '50%' : '90%', 
                         layout: { padding: (currentPos === 'outside') ? (window.innerWidth < 480 ? 60 : 40) : 20 },
@@ -704,7 +759,7 @@
         }
 
         function toggleMasterLabelPos() { masterLabelPos = (masterLabelPos === 'outside') ? 'inside' : 'outside'; render(); }
-        function toggleChartLabelPos(index) { const current = chartConfigs[index].labelPos || 'outside'; chartConfigs[index].labelPos = (current === 'outside') ? 'inside' : 'outside'; render(); }
+        function toggleChartLabelPos(index) { const current = chartConfigs[index].labelPos || 'inside'; chartConfigs[index].labelPos = (current === 'outside') ? 'inside' : 'outside'; render(); }
         
         function downloadMasterChart() { const el = document.getElementById('masterChartBox'); const total = document.getElementById('grandTotal').innerText; captureAndOpenImage(el, `資產總覽_總值${total}萬`); }
         function downloadChart(index) { const el = document.getElementById(`chart-box-${index}`); const title = chartConfigs[index].title || 'chart'; const val = (el.innerText.match(/市值：([\d\.]+) 萬/) || [])[1] || ''; captureAndOpenImage(el, `${title}_市值${val}萬`); }
