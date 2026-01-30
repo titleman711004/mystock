@@ -4,11 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Stock Dashboard Pro</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Roboto:wght@500;700;900&display=swap" rel="stylesheet">
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -22,43 +17,36 @@
             --row-bg: #111827; --row-border: #1f2937;
             --tech-line: #06b6d4; --tech-text-pct: #06b6d4;
             --btn-bg: #1e293b; --btn-text: #94a3b8;
-            --font-main: 'Noto Sans TC', sans-serif;
-            --font-num: 'Roboto', sans-serif;
         }
+        [data-theme="ocean"] { --bg-body: #0a1929; --bg-card: #132f4c; --bg-input: #1e4976; --border-color: #2a6496; --text-main: #e2e8f0; --text-sub: #94a3b8; --chart-border: #0a1929; --input-text: #ffffff; --row-bg: #0d2137; --row-border: #132f4c; --tech-line: #38bdf8; --tech-text-pct: #38bdf8; --btn-bg: #132f4c; --btn-text: #94a3b8; }
         [data-theme="oled"] { --bg-body: #000000; --bg-card: #121212; --bg-input: #262626; --border-color: #333333; --text-main: #e5e5e5; --text-sub: #a3a3a3; --chart-border: #000000; --input-text: #e5e5e5; --row-bg: #0a0a0a; --row-border: #262626; --tech-line: #22d3ee; --tech-text-pct: #22d3ee; --btn-bg: #171717; --btn-text: #a3a3a3; }
-        [data-theme="tiffany"] { --bg-body: #042f2e; --bg-card: #115e59; --bg-input: #134e4a; --border-color: #2dd4bf; --text-main: #f0fdfa; --text-sub: #99f6e4; --chart-border: #042f2e; --input-text: #ccfbf1; --row-bg: #022c22; --row-border: #115e59; --tech-line: #5eead4; --tech-text-pct: #5eead4; --btn-bg: #134e4a; --btn-text: #99f6e4; }
-        [data-theme="green"] { --bg-body: #052e16; --bg-card: #14532d; --bg-input: #166534; --border-color: #22c55e; --text-main: #f0fdf4; --text-sub: #86efac; --chart-border: #052e16; --input-text: #dcfce7; --row-bg: #022c22; --row-border: #14532d; --tech-line: #4ade80; --tech-text-pct: #4ade80; --btn-bg: #14532d; --btn-text: #86efac; }
-        [data-theme="yellow"] { --bg-body: #1a1602; --bg-card: #3f3204; --bg-input: #574608; --border-color: #eab308; --text-main: #fefce8; --text-sub: #fde047; --chart-border: #1a1602; --input-text: #fef08a; --row-bg: #151201; --row-border: #422006; --tech-line: #facc15; --tech-text-pct: #facc15; --btn-bg: #3f3204; --btn-text: #fde047; }
-        [data-theme="orange"] { --bg-body: #1f0b03; --bg-card: #431407; --bg-input: #7c2d12; --border-color: #f97316; --text-main: #fff7ed; --text-sub: #fdba74; --chart-border: #1f0b03; --input-text: #ffedd5; --row-bg: #180802; --row-border: #561d0d; --tech-line: #fb923c; --tech-text-pct: #fb923c; --btn-bg: #431407; --btn-text: #fdba74; }
-        [data-theme="purple"] { --bg-body: #180326; --bg-card: #3b0764; --bg-input: #581c87; --border-color: #a855f7; --text-main: #faf5ff; --text-sub: #d8b4fe; --chart-border: #180326; --input-text: #f3e8ff; --row-bg: #12021d; --row-border: #4a0d75; --tech-line: #c084fc; --tech-text-pct: #c084fc; --btn-bg: #3b0764; --btn-text: #d8b4fe; }
 
-        body { background-color: var(--bg-body); color: var(--text-main); font-family: var(--font-main); transition: background-color 0.3s, color 0.3s; letter-spacing: 0.02em; }
+        body { background-color: var(--bg-body); color: var(--text-main); font-family: -apple-system, sans-serif; transition: background-color 0.3s, color 0.3s; }
         .input-card { background: var(--bg-card); border-radius: 12px; padding: 16px; border: 2px solid var(--border-color); margin-bottom: 20px; transition: 0.3s; }
-        .input-field { background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; color: var(--input-text) !important; font-size: 16px !important; width: 100%; transition: all 0.3s; font-family: var(--font-main); }
-        .compact-row { background: var(--row-bg); border: 1px solid var(--row-border); margin-bottom: 8px; border-radius: 10px; display: flex; align-items: center; padding: 14px; min-height: 60px; transition: all 0.3s; flex-wrap: wrap; }
+        .input-field { background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; color: var(--input-text) !important; font-size: 16px !important; width: 100%; transition: all 0.3s; }
+        .compact-row { background: var(--row-bg); border: 1px solid var(--row-border); margin-bottom: 8px; border-radius: 10px; display: flex; align-items: center; padding: 14px; min-height: 60px; transition: all 0.3s; }
         .drag-handle { cursor: move; color: #3b82f6; width: 40px; display: none; align-items: center; justify-content: center; font-size: 20px; background: rgba(59, 130, 246, 0.1); border-radius: 6px; margin-right: 12px; }
         .sort-mode-active .drag-handle { display: flex; }
         .num-dot { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; border: 1px solid transparent; }
         
-        .chart-box { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color); padding: 15px; margin-bottom: 12px; position: relative; transition: background-color 0.3s, border-color 0.3s; padding-top: 40px; }
-        .master-chart-box { border: 2px solid #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.15); padding-top: 15px; }
+        .chart-box { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color); padding: 15px; margin-bottom: 12px; position: relative; transition: background-color 0.3s, border-color 0.3s; }
+        .master-chart-box { border: 2px solid #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.15); }
         
         /* 增加 cursor pointer 提示可點擊 */
-        .chart-container { height: 400px; min-height: 400px; position: relative; width: 100%; cursor: pointer; }
-        .master-container { height: 480px; min-height: 480px; position: relative; width: 100%; cursor: pointer; }
+        .chart-container { height: 400px; position: relative; cursor: pointer; }
+        .master-container { height: 480px; position: relative; cursor: pointer; }
 
         .note-legend { margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 12px; font-size: 13px; color: var(--text-sub); text-align: center; line-height: 1.6; }
         .screenshot-hide { opacity: 1; transition: opacity 0.2s; }
         .capturing .screenshot-hide { opacity: 0 !important; visibility: hidden !important; }
 
-        .btn-icon { background: var(--btn-bg); color: var(--btn-text); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
-        .btn-icon:hover { color: var(--text-main); border-color: var(--text-main); background: var(--border-color); transform: scale(1.05); }
+        .btn-icon { background: var(--btn-bg); color: var(--btn-text); border: 1px solid var(--border-color); }
+        .btn-icon:hover { color: var(--text-main); border-color: var(--text-main); }
         
-        /* 右上角工具列 */
-        .btn-toolbar-group { display: flex; gap: 6px; position: absolute; top: 12px; right: 12px; z-index: 10; }
-        /* 左上角刪除鈕 */
-        .btn-delete-pos { position: absolute; top: 12px; left: 12px; z-index: 10; }
-        
+        /* 下方對照表樣式 (只在非編輯模式顯示) */
+        .show-in-view-mode { display: none; }
+        .note-legend { display: block; } /* 預設顯示 */
+
         #loadingOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.85); z-index: 9999;
@@ -66,144 +54,82 @@
         }
         .spinner { width: 40px; height: 40px; border: 4px solid #3b82f6; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        
-        #importModal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 9998;
-            display: none; justify-content: center; align-items: center; flex-direction: column; padding: 20px;
-        }
-
-        select.input-field { -webkit-appearance: none; appearance: none; }
-        .hidden-in-view-mode { display: block; }
-        .view-mode-active .hidden-in-view-mode { display: none !important; }
-        .show-in-view-mode { display: none; }
-        .view-mode-active .show-in-view-mode { display: block !important; }
-
-        .title-input { border: none; border-bottom: 1px dashed var(--border-color); border-radius: 0; background: transparent; }
-        .title-input:focus { border-bottom: 1px solid var(--text-main); outline: none; }
-
-        .text-gain { color: #f87171; } 
-        .text-loss { color: #4ade80; }
-        .stock-name-display { font-size: 14px; font-weight: 500; color: var(--text-sub); margin-left: 6px; }
     </style>
 </head>
 <body class="p-3">
 
     <div id="loadingOverlay">
         <div class="spinner"></div>
-        <div class="text-blue-400 font-bold tracking-widest" id="loadingText">Connecting...</div>
-    </div>
-
-    <div id="importModal">
-        <h3 class="text-white font-bold text-xl mb-4">還原備份資料</h3>
-        <p class="text-slate-400 text-xs mb-2 text-center">請將代碼 (JTdC 開頭) 貼在下方，系統會自動修復格式：</p>
-        <textarea id="importTextarea" class="w-full max-w-2xl h-48 bg-slate-800 text-white p-4 rounded-xl border border-slate-600 mb-4 text-xs font-mono focus:outline-none focus:border-blue-500" placeholder="在此貼上代碼..."></textarea>
-        <div class="flex gap-4 w-full max-w-2xl">
-            <button onclick="confirmImport()" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-lg font-bold transition">確認還原</button>
-            <button onclick="closeImportModal()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-lg font-bold transition">取消</button>
-        </div>
+        <div class="text-blue-400 font-bold tracking-widest">Processing...</div>
     </div>
 
     <div class="max-w-7xl mx-auto">
         <header class="flex flex-col md:flex-row items-center justify-between mb-6 gap-y-4">
             <div class="flex flex-col items-center md:items-start w-full md:w-auto">
                 <div class="flex items-center">
-                    <h2 class="text-3xl font-black text-blue-500 italic text-center tracking-tighter">DASHBOARD <span class="text-xs text-yellow-400 not-italic ml-1 font-bold" style="text-shadow: 0 0 10px #facc15, 0 0 20px #854d0e;">PRO</span></h2>
+                    <h2 class="text-2xl font-black text-blue-500 italic text-center">DASHBOARD <span class="text-xs text-yellow-400 not-italic ml-1" style="text-shadow: 0 0 10px #facc15, 0 0 20px #854d0e;">PRO</span></h2>
                 </div>
-                <div class="flex items-center gap-1 mt-1 flex-wrap">
-                    <p class="text-[10px] text-white tracking-widest font-medium mr-1">Designed by Titleman</p>
-                    <button onclick="cycleTheme()" class="text-xs px-2 py-0.5 rounded border border-slate-600 bg-slate-800 text-slate-300 hover:text-white transition-all whitespace-nowrap font-medium hidden-in-view-mode">
-                        <span id="themeName">預設</span>
-                    </button>
-                    <button onclick="toggleEditMode()" id="modeBtn" class="text-xs px-2 py-0.5 rounded border border-blue-600 bg-blue-900 text-blue-200 hover:text-white transition-all whitespace-nowrap font-medium">
-                        ✏️ 編輯
+                <div class="flex items-center gap-3 mt-1">
+                    <p class="text-[10px] text-white tracking-widest">Designed by Titleman</p>
+                    <button onclick="cycleTheme()" class="text-xs px-2 py-0.5 rounded border border-slate-600 bg-slate-800 text-slate-300 hover:text-white transition-all whitespace-nowrap">
+                        🎨 <span id="themeName">預設</span>
                     </button>
                 </div>
             </div>
             
-            <div class="flex gap-3 justify-end w-full md:w-auto items-center flex-wrap">
-                <button onclick="updateAllPrices()" class="bg-amber-600 text-white text-[10px] px-4 py-2 rounded-lg font-bold whitespace-nowrap shadow-lg hover:scale-105 transition tracking-wide flex items-center gap-1">
-                    <span>↻</span> 更新股價
-                </button>
-                <button onclick="addNewChart()" class="bg-blue-600 text-white text-[10px] px-4 py-2 rounded-lg font-bold whitespace-nowrap shadow-lg hover:scale-105 transition tracking-wide hidden-in-view-mode">+ 分組</button>
-                <button onclick="copyToClipboard()" class="bg-emerald-700 text-white text-[10px] px-4 py-2 rounded-lg font-bold whitespace-nowrap shadow-lg hover:scale-105 transition tracking-wide hidden-in-view-mode">備份</button>
-                <button onclick="importFromText()" class="bg-slate-700 text-white text-[10px] px-4 py-2 rounded-lg font-bold whitespace-nowrap shadow-lg hover:scale-105 transition tracking-wide hidden-in-view-mode">還原</button>
+            <div class="flex gap-3 justify-end w-full md:w-auto">
+                <button onclick="addNewChart()" class="bg-blue-600 text-white text-[10px] px-4 py-2 rounded-lg font-bold whitespace-nowrap shadow-lg hover:scale-105 transition">+ 分組</button>
+                <button onclick="copyToClipboard()" class="bg-emerald-700 text-white text-[10px] px-4 py-2 rounded-lg font-bold whitespace-nowrap shadow-lg hover:scale-105 transition">備份</button>
+                <button onclick="importFromText()" class="bg-slate-700 text-white text-[10px] px-4 py-2 rounded-lg font-bold whitespace-nowrap shadow-lg hover:scale-105 transition">還原</button>
             </div>
         </header>
 
         <div id="masterChartWrapper" class="mb-8 hidden">
             <div class="chart-box master-chart-box" id="masterChartBox">
                 <h3 class="text-center text-blue-400 font-bold text-xl mb-1 tracking-widest">資產配置總覽</h3>
-                <div class="text-center text-emerald-500 text-m mb-3 font-mono tracking-wider font-medium">
-                    總資產 ：<span id="grandTotal" class="text-red-400 font-black text-2xl font-num">0</span> 萬
-                </div>
-                <div class="grid grid-cols-3 gap-2 mt-2 mb-2 px-2 max-w-2xl mx-auto">
-                    <div class="text-center p-2 bg-slate-800/50 rounded-lg border border-slate-700/50 backdrop-blur-sm">
-                        <div class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">預估年息</div>
-                        <div class="text-lg font-black text-yellow-400 tracking-tight whitespace-nowrap font-num">$ <span id="totalAnnualDiv">0</span></div>
-                    </div>
-                    <div class="text-center p-2 bg-slate-800/50 rounded-lg border border-slate-700/50 backdrop-blur-sm">
-                        <div class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">月均被動</div>
-                        <div class="text-lg font-black text-emerald-400 tracking-tight whitespace-nowrap font-num">$ <span id="totalMonthlyDiv">0</span></div>
-                    </div>
-                    <div class="text-center p-2 bg-slate-800/50 rounded-lg border border-slate-700/50 backdrop-blur-sm">
-                        <div class="text-[10px] text-slate-400 uppercase tracking-widest font-bold">總殖利率</div>
-                        <div class="text-lg font-black text-rose-400 tracking-tight whitespace-nowrap font-num"><span id="portfolioYield">0.0</span>%</div>
-                    </div>
+                <div class="text-center text-slate-500 text-xs mb-2 font-mono tracking-wider">
+                    總資產：<span id="grandTotal" class="text-emerald-400 font-black text-2xl">0</span> 萬
                 </div>
                 
-                <div class="btn-toolbar-group screenshot-hide">
-                    <button onclick="toggleMasterLabelPos()" class="btn-icon w-8 h-8 rounded-full font-bold text-lg" title="切換 內/外">◐</button>
-                    <button onclick="downloadMasterChart()" class="btn-icon w-8 h-8 rounded-full" title="另開高畫質圖檔">📷</button>
+                <button onclick="downloadMasterChart()" class="screenshot-hide absolute top-3 right-3 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center" title="另開高畫質圖檔">
+                    📷
+                </button>
+
+                <div class="master-container">
+                    <canvas id="masterCanvas"></canvas>
                 </div>
-                <div class="master-container"><canvas id="masterCanvas"></canvas></div>
             </div>
         </div>
 
         <div id="chartsWrapper" class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6"></div>
 
-        <div id="inputArea" class="input-card shadow-2xl hidden-in-view-mode">
+        <div id="inputArea" class="input-card shadow-2xl">
             <input type="hidden" id="editId" value="">
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 mb-4">
-                <div class="col-span-1"><label class="text-[10px] text-slate-400 mb-1 block font-medium">股票代號 (限數字)</label><input id="symbol" class="input-field font-bold tracking-wide font-num" placeholder="例如 2330"></div>
-                <div class="col-span-1"><label class="text-[10px] text-blue-400 mb-1 block font-medium">文字大小</label><input type="number" id="fontSize" class="input-field font-num" value="12"></div>
-                <div class="col-span-1"><label class="text-[10px] text-slate-400 mb-1 block font-medium">張數</label><input type="number" id="shares" class="input-field font-num" step="0.001"></div>
-                <div class="col-span-1"><label class="text-[10px] text-slate-400 mb-1 block font-medium">買入均價</label><input type="number" id="avgPrice" class="input-field font-num"></div>
-                <div class="col-span-1"><label class="text-[10px] text-amber-400 mb-1 block font-medium">目前股價</label><input type="number" id="currentPrice" class="input-field font-num" placeholder="自動抓取"></div>
-                <div class="col-span-1"><label class="text-[10px] text-yellow-400 mb-1 block font-medium">配息頻率</label><select id="divFreq" class="input-field"><option value="1">年配 (1次/年)</option><option value="2">半年配 (2次/年)</option><option value="4">季配 (4次/年)</option><option value="12">月配 (12次/年)</option><option value="0">無配息</option></select></div>
-                <div class="col-span-1">
-                    <div class="flex justify-between items-center mb-1">
-                        <label class="text-[10px] text-yellow-400 font-medium">單次配息</label>
-                        <label class="flex items-center cursor-pointer gap-1" title="若取消勾選，此筆配息只會算在年總額，不列入月平均計算">
-                            <input type="checkbox" id="includeInMonthly" class="accent-blue-500 w-3 h-3 cursor-pointer" checked>
-                            <span class="text-[9px] text-slate-400 select-none font-medium">併月均</span>
-                        </label>
-                    </div>
-                    <input type="number" id="divAmt" class="input-field font-num" placeholder="每股金額" step="0.01">
-                </div>
-                <div class="col-span-1"><label class="text-[10px] text-emerald-400 mb-1 block font-medium">已領息(總額)</label><input type="number" id="divRec" value="0" class="input-field font-num"></div>
-                <div class="col-span-1"><label class="text-[10px] text-orange-400 mb-1 block font-medium">已獲利(總額)</label><input type="number" id="gainRec" value="0" class="input-field font-num"></div>
-                <div class="col-span-2 md:col-span-4 lg:col-span-7"><label class="text-[10px] text-yellow-500 mb-1 block font-medium">中文名稱 / 備註</label><input id="note" class="input-field" placeholder="例如 台積電"></div>
+            <div class="grid grid-cols-2 md:grid-cols-7 gap-3 mb-4">
+                <div class="col-span-1"><label class="text-[10px] text-slate-400 mb-1 block">股票代號</label><input id="symbol" class="input-field"></div>
+                <div class="col-span-1"><label class="text-[10px] text-blue-400 mb-1 block">文字大小</label><input type="number" id="fontSize" class="input-field" value="12"></div>
+                <div class="col-span-1"><label class="text-[10px] text-slate-400 mb-1 block">張數</label><input type="number" id="shares" class="input-field" step="0.001"></div>
+                <div class="col-span-1"><label class="text-[10px] text-slate-400 mb-1 block">均價</label><input type="number" id="avgPrice" class="input-field"></div>
+                <div class="col-span-1"><label class="text-[10px] text-emerald-400 mb-1 block">領息</label><input type="number" id="divRec" value="0" class="input-field"></div>
+                <div class="col-span-1"><label class="text-[10px] text-orange-400 mb-1 block">獲利</label><input type="number" id="gainRec" value="0" class="input-field"></div>
+                <div class="col-span-2 md:col-span-7"><label class="text-[10px] text-yellow-500 mb-1 block">備註 (置中於圖表下方)</label><input id="note" class="input-field"></div>
             </div>
-            <button onclick="saveStock()" class="w-full bg-blue-600 py-4 rounded-xl font-black text-xl active:scale-95 transition-all tracking-widest shadow-lg">儲存並刷新</button>
+            <button onclick="saveStock()" class="w-full bg-blue-600 py-4 rounded-xl font-black text-xl active:scale-95 transition-all">儲存並刷新</button>
         </div>
 
-        <div id="listHeader" class="flex justify-between items-center mb-4 px-1 hidden-in-view-mode">
+        <div class="flex justify-between items-center mb-4 px-1">
             <span class="text-sm font-bold text-slate-500 uppercase tracking-widest">資產列表</span>
-            <button id="sortToggle" onclick="toggleSortMode()" class="text-xs bg-slate-800 border border-slate-600 px-5 py-2 rounded-full text-blue-400 font-bold tracking-wide">⇅ 排序</button>
+            <button id="sortToggle" onclick="toggleSortMode()" class="text-xs bg-slate-800 border border-slate-600 px-5 py-2 rounded-full text-blue-400 font-bold">⇅ 排序模式</button>
         </div>
 
-        <div id="mainTable" class="space-y-2 pb-24 hidden-in-view-mode"></div>
+        <div id="mainTable" class="space-y-2 pb-24"></div>
     </div>
     
-    <footer class="text-center text-slate-600 text-[10px] mt-8 py-6 border-t border-slate-800 tracking-wider font-medium">
+    <footer class="text-center text-slate-600 text-[10px] mt-8 py-6 border-t border-slate-800 tracking-wider">
         Copyright © Titleman
     </footer>
     
     <script>
-        const VERCEL_URL = "https://my-stock-api-blond.vercel.app"; 
-        const RENDER_URL = "https://my-stock-api-g3bz.onrender.com";
-
         function loadRobustData(currentKey, fallbackKeys, defaultValue) {
             let data = localStorage.getItem(currentKey);
             if (data && data !== "[]" && data !== "null") return JSON.parse(data);
@@ -217,23 +143,25 @@
             return defaultValue;
         }
 
-        const assetKeys = ['myAssetsV112', 'myAssetsV111', 'myAssetsV110']; 
-        const configKeys = ['chartConfigsV112', 'chartConfigsV111', 'chartConfigsV110'];
+        // 使用最新的 Key，但保留向下相容
+        const assetKeys = ['myAssetsV112', 'myAssetsV106', 'myAssets']; 
+        const configKeys = ['chartConfigsV112', 'chartConfigsV108', 'chartConfigs'];
 
         let myAssets = loadRobustData('myAssetsV112', assetKeys, []);
         let chartConfigs = loadRobustData('chartConfigsV112', configKeys, [{ id: Date.now(), title: '主要配置', selectedIds: [], labelPos: 'inside', labelContent: 'symbol' }]);
         
-        // 修正：預設值強制為 inside
-        chartConfigs.forEach(c => { 
+        // --- 關鍵：資料自動修復 (Auto-Fix) ---
+        // 確保舊備份檔讀入後，有 'labelPos' 和 'labelContent' 屬性
+        chartConfigs.forEach(c => {
             if (!c.selectedIds) c.selectedIds = [];
-            if (!c.labelPos || c.labelPos === 'outside') c.labelPos = 'inside'; // 強制 inside，移除周圍標籤
+            // 強制將預設位置改為 'inside'
+            if (!c.labelPos || c.labelPos === 'outside') c.labelPos = 'inside';
+            // 預設內容為 'symbol' (代號)
             if (!c.labelContent) c.labelContent = 'symbol'; 
         });
-        myAssets.forEach(a => { if(typeof a.currentPrice === 'undefined') a.currentPrice = 0; });
 
-        let masterLabelPos = localStorage.getItem('masterLabelPosV1') || 'inside'; 
+        let masterLabelPos = localStorage.getItem('masterLabelPosV1') || 'inside';
         let currentTheme = localStorage.getItem('appThemeV1') || 'dark';
-        let isEditMode = localStorage.getItem('editModeV1') !== 'false';
         
         let chartInstances = {};
         let masterChartInstance = null;
@@ -242,218 +170,34 @@
 
         const uniquePalette = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6', '#fbbf24', '#6366f1', '#d946ef', '#2dd4bf', '#f43f5e', '#a855f7', '#34d399', '#fb7185', '#60a5fa', '#fb923c', '#818cf8'];
         function getItemColor(index) { return uniquePalette[index % uniquePalette.length]; }
-        function getThemeColor(varName) { return getComputedStyle(document.documentElement).getPropertyValue(varName).trim(); }
 
-        async function fetchRace(endpoint) {
-            const controller = new AbortController();
-            const signal = controller.signal;
-            const vercelPromise = fetch(`${VERCEL_URL}${endpoint}`, { signal }).then(res => { if (!res.ok) throw new Error("Vercel error"); return res.json(); });
-            const startRender = () => fetch(`${RENDER_URL}${endpoint}`, { signal }).then(res => { if (!res.ok) throw new Error("Render error"); return res.json(); });
-            const delayedRenderPromise = new Promise((resolve, reject) => {
-                setTimeout(() => { startRender().then(resolve).catch(reject); }, 1500); 
-            });
-            try { return await Promise.any([vercelPromise, delayedRenderPromise]); } 
-            catch (error) { return await startRender(); }
+        function getThemeColor(varName) {
+            return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
         }
 
-        async function updateAllPrices() {
-            const btn = document.getElementById('loadingOverlay');
-            const txt = document.getElementById('loadingText');
-            btn.style.display = 'flex';
-            txt.innerText = "正在連線伺服器，可能需要 30-60 秒 (若 Render 正在喚醒)...";
-            
-            let updatedCount = 0;
-            const uniqueSymbols = [...new Set(myAssets.map(a => a.symbol))];
-            
-            for (let i = 0; i < uniqueSymbols.length; i++) {
-                const sym = uniqueSymbols[i];
-                if(!sym || isNaN(sym)) continue; 
-                txt.innerText = `更新中 (${i+1}/${uniqueSymbols.length}): ${sym}`;
-                try {
-                    const data = await fetchRace(`/dividend/${sym}`);
-                    if (data && data.price) {
-                        myAssets.filter(a => a.symbol === sym).forEach(a => {
-                            a.currentPrice = data.price;
-                        });
-                        updatedCount++;
-                    }
-                } catch (e) {
-                    console.error(`Failed to update ${sym}`, e);
-                }
-            }
-            
-            btn.style.display = 'none';
-            render();
-            alert(`更新完成！共更新 ${updatedCount} 檔股票現價。\n(如果失敗請檢查代號是否為純數字)`);
+        // 新增：點擊圖表切換顯示內容 (代號 <-> 中文)
+        function toggleChartLabelContent(index) {
+            // 使用 setTimeout 確保點擊事件結束後才重繪，防止圖表消失
+            setTimeout(() => {
+                const current = chartConfigs[index].labelContent || 'symbol';
+                chartConfigs[index].labelContent = (current === 'symbol') ? 'note' : 'symbol';
+                render();
+            }, 50);
         }
-
-        // --- 強力還原函式 ---
-        function openImportModal() { document.getElementById('importModal').style.display = 'flex'; }
-        function closeImportModal() { document.getElementById('importModal').style.display = 'none'; document.getElementById('importTextarea').value = ''; }
-        function confirmImport() {
-            let c = document.getElementById('importTextarea').value;
-            c = c.replace(/\s/g, ''); 
-            if(c) { 
-                try { 
-                    const d = JSON.parse(decodeURIComponent(atob(c))); 
-                    myAssets=d.myAssets; 
-                    chartConfigs=d.chartConfigs; 
-                    render(); 
-                    closeImportModal();
-                    alert("✅ 還原成功！");
-                } catch(e){ 
-                    console.error(e);
-                    try {
-                        const padded = c.padEnd(c.length + (4 - c.length % 4) % 4, '=');
-                        const d = JSON.parse(decodeURIComponent(atob(padded)));
-                        myAssets=d.myAssets; 
-                        chartConfigs=d.chartConfigs; 
-                        render();
-                        closeImportModal();
-                        alert("✅ 還原成功 (已自動修復格式)！");
-                    } catch(e2) {
-                        alert("❌ 還原失敗：代碼格式錯誤，請確認您已複製完整代碼。"); 
-                    }
-                } 
-            }
-        }
-        function importFromText() { openImportModal(); } 
-
-        const techLabelsPlugin = {
-            id: 'techLabels',
-            afterDatasetsDraw(chart, args, options) {
-               // 僅在 outside 模式下繪製，預設 inside 時不執行
-               const { ctx, chartArea: { top, bottom, left, right, width, height } } = chart;
-                const lineColor = getThemeColor('--tech-line');
-                const pctColor = getThemeColor('--tech-text-pct');
-                const textColor = getThemeColor('--text-main');
-                const isMobile = window.innerWidth < 480;
-
-                let labels = [];
-                chart.data.datasets.forEach((dataset, i) => {
-                    const meta = chart.getDatasetMeta(i);
-                    meta.data.forEach((datapoint, index) => {
-                        const { x, y } = datapoint.tooltipPosition();
-                        const model = datapoint;
-                        const angle = (model.startAngle + model.endAngle) / 2;
-                        const isRight = angle < Math.PI / 2 || angle > Math.PI * 1.5;
-                        const outerRadius = model.outerRadius;
-                        const lineExtendLen = isMobile ? 10 : 30;
-                        const startX = model.x + Math.cos(angle) * outerRadius;
-                        const startY = model.y + Math.sin(angle) * outerRadius;
-                        const elbowX = model.x + Math.cos(angle) * (outerRadius + lineExtendLen);
-                        const elbowY = model.y + Math.sin(angle) * (outerRadius + lineExtendLen);
-
-                        labels.push({
-                            index, isRight, startX, startY, elbowX, elbowY, angle,
-                            text: chart.data.labels[index],
-                            pct: ((dataset.data[index] / dataset.data.reduce((a,b)=>a+b,0)) * 100).toFixed(1) + '%',
-                            finalY: elbowY 
-                        });
-                    });
-                });
-
-                ['left', 'right'].forEach(side => {
-                    const isRightSide = (side === 'right');
-                    const sideLabels = labels.filter(l => l.isRight === isRightSide).sort((a, b) => a.finalY - b.finalY);
-                    if (sideLabels.length === 0) return;
-                    const minSpacing = isMobile ? 40 : 55; 
-                    for (let i = 1; i < sideLabels.length; i++) {
-                        const prev = sideLabels[i-1];
-                        const curr = sideLabels[i];
-                        if (curr.finalY - prev.finalY < minSpacing) {
-                            curr.finalY = prev.finalY + minSpacing;
-                        }
-                    }
-                    const last = sideLabels[sideLabels.length - 1];
-                    const bottomLimit = bottom + (isMobile ? 20 : 10);
-                    if (last.finalY > bottomLimit) {
-                        const offset = last.finalY - bottomLimit;
-                        sideLabels.forEach(l => l.finalY -= offset);
-                    }
-                    const first = sideLabels[0];
-                    const topLimit = top - (isMobile ? 20 : 10);
-                    if (first.finalY < topLimit) {
-                         const offset = topLimit - first.finalY;
-                         sideLabels.forEach(l => l.finalY += offset);
-                    }
-                });
-
-                labels.forEach(l => {
-                    const lineBendLen = isMobile ? 10 : 40;
-                    const endX = l.elbowX + (l.isRight ? lineBendLen : -lineBendLen);
-                    ctx.save();
-                    ctx.beginPath();
-                    ctx.moveTo(l.startX, l.startY);
-                    ctx.lineTo(l.elbowX, l.elbowY);
-                    ctx.lineTo(l.elbowX, l.finalY);
-                    ctx.lineTo(endX, l.finalY);
-                    ctx.strokeStyle = lineColor; 
-                    ctx.lineWidth = 1.5;
-                    ctx.shadowColor = lineColor;
-                    ctx.shadowBlur = 10; 
-                    ctx.stroke();
-                    ctx.restore();
-
-                    ctx.save();
-                    ctx.font = isMobile ? '700 10px "Noto Sans TC", sans-serif' : '700 13px "Noto Sans TC", sans-serif';
-                    ctx.fillStyle = textColor; 
-                    ctx.textAlign = l.isRight ? 'left' : 'right';
-                    ctx.textBaseline = 'middle';
-                    ctx.shadowColor = 'rgba(0,0,0,0.8)';
-                    ctx.shadowBlur = 4;
-                    const textPadding = 8;
-                    ctx.fillText(l.text, endX + (l.isRight ? textPadding : -textPadding), l.finalY - 8);
-                    ctx.font = isMobile ? '500 9px "Roboto", sans-serif' : '500 12px "Roboto", sans-serif';
-                    ctx.fillStyle = pctColor;
-                    ctx.fillText(l.pct, endX + (l.isRight ? textPadding : -textPadding), l.finalY + 8);
-                    ctx.restore();
-                });
-            }
-        };
 
         function applyTheme(theme) {
             document.documentElement.setAttribute('data-theme', theme);
-            const names = { 'dark': '預設', 'oled': '黑', 'tiffany': '藍', 'green': '綠', 'yellow': '黃', 'orange': '橙', 'purple': '紫' };
-            document.getElementById('themeName').innerText = names[theme] || '預設';
+            const names = { 'dark': '預設', 'ocean': '海洋', 'oled': 'OLED' };
+            document.getElementById('themeName').innerText = names[theme];
             localStorage.setItem('appThemeV1', theme);
             currentTheme = theme;
             render(); 
         }
 
         function cycleTheme() {
-            const order = ['dark', 'oled', 'tiffany', 'green', 'yellow', 'orange', 'purple'];
+            const order = ['dark', 'ocean', 'oled'];
             const nextIndex = (order.indexOf(currentTheme) + 1) % order.length;
             applyTheme(order[nextIndex]);
-        }
-
-        function toggleEditMode() {
-            isEditMode = !isEditMode;
-            localStorage.setItem('editModeV1', isEditMode);
-            applyEditMode();
-            render(); 
-        }
-
-        function applyEditMode() {
-            const btn = document.getElementById('modeBtn');
-            if (isEditMode) {
-                document.body.classList.remove('view-mode-active');
-                btn.innerHTML = '返回';
-                btn.classList.replace('text-white', 'text-blue-200');
-            } else {
-                document.body.classList.add('view-mode-active');
-                btn.innerHTML = '編輯';
-                btn.classList.replace('text-blue-200', 'text-white');
-            }
-        }
-
-        // 修改：使用 setTimeout 延遲執行，避免點擊時重繪導致的 Crash
-        function toggleChartLabelContent(index) {
-            setTimeout(() => {
-                const current = chartConfigs[index].labelContent || 'symbol';
-                chartConfigs[index].labelContent = (current === 'symbol') ? 'note' : 'symbol';
-                render();
-            }, 10); // 輕微延遲即可解決
         }
 
         function render() {
@@ -462,9 +206,8 @@
             localStorage.setItem('masterLabelPosV1', masterLabelPos);
 
             if(!document.documentElement.getAttribute('data-theme')) applyTheme(currentTheme);
-            applyEditMode(); 
 
-            // ⚠️ 關鍵修復：在重繪 HTML 之前，必須先銷毀所有舊圖表實例
+            // ⚠️ 重繪前先銷毀舊圖表，避免殘留
             if (masterChartInstance) { masterChartInstance.destroy(); masterChartInstance = null; }
             Object.values(chartInstances).forEach(chart => chart.destroy());
             chartInstances = {};
@@ -473,220 +216,127 @@
             const textColor = getThemeColor('--text-main');
             const isMobile = window.innerWidth < 480;
 
+            const masterLabels = [];
+            const masterData = [];
+            const masterColors = [];
             let grandTotal = 0;
-            let grandTotalCost = 0; 
-            let grandTotalAnnualDiv = 0;
-            let grandTotalMonthlyDiv = 0;
 
-            chartConfigs.forEach((conf) => {
+            chartConfigs.forEach((conf, i) => {
+                let groupTotal = 0;
                 conf.selectedIds.forEach(sid => {
                     const s = myAssets.find(a => a.id == sid);
                     if(s) {
                         const netCost = (s.avgPrice * s.shares * 1000) - (s.divRec || 0) - (s.gainRec || 0);
-                        grandTotal += (netCost > 0 ? netCost : 0);
-                        
-                        const freq = parseInt(s.divFreq) || 0;
-                        const amt = parseFloat(s.divAmt) || 0;
-                        const shares = parseFloat(s.shares) || 0;
-                        const avgPrice = parseFloat(s.avgPrice) || 0;
-                        const includeInMonthly = (s.includeInMonthly !== false); 
-                        
-                        grandTotalCost += (shares * 1000 * avgPrice);
-                        if(freq > 0 && amt > 0 && shares > 0) {
-                            let annual = shares * 1000 * amt * freq;
-                            grandTotalAnnualDiv += annual;
-                            if(includeInMonthly) grandTotalMonthlyDiv += (annual / 12);
-                        }
+                        groupTotal += (netCost > 0 ? netCost : 0);
                     }
                 });
-            });
-
-            document.getElementById('grandTotal').innerText = (grandTotal / 10000).toFixed(1);
-            let totalYieldPct = grandTotalCost > 0 ? (grandTotalAnnualDiv / grandTotalCost * 100) : 0;
-            document.getElementById('totalAnnualDiv').innerText = Math.round(grandTotalAnnualDiv).toLocaleString();
-            document.getElementById('totalMonthlyDiv').innerText = Math.round(grandTotalMonthlyDiv).toLocaleString();
-            document.getElementById('portfolioYield').innerText = totalYieldPct.toFixed(2);
-
-            const masterLabels = [];
-            const masterData = [];
-            const masterColors = [];
-            let chartsHTML = '';
-            
-            chartConfigs.forEach((conf, i) => {
-                let groupTotal = 0;
-                let groupAnnualDiv = 0;
-                let groupCostBasis = 0;
-                let legendItems = '';
-
-                conf.selectedIds.forEach(sid => {
-                    const a = myAssets.find(item => item.id == sid);
-                    if (a) {
-                        const cost = (a.avgPrice * a.shares * 1000) - (a.divRec || 0) - (a.gainRec || 0);
-                        groupTotal += (cost > 0 ? cost : 0);
-
-                        const freq = parseInt(a.divFreq) || 0;
-                        const amt = parseFloat(a.divAmt) || 0;
-                        const shares = parseFloat(a.shares) || 0;
-                        const avgPrice = parseFloat(a.avgPrice) || 0;
-                        
-                        if(freq > 0 && amt > 0 && shares > 0) {
-                            groupAnnualDiv += (shares * 1000 * amt * freq);
-                        }
-                        groupCostBasis += (shares * 1000 * avgPrice);
-
-                        const stockColor = getItemColor(myAssets.findIndex(ma => ma.id == sid));
-                        const noteText = a.note ? a.note : '-';
-                        legendItems += `
-                            <div class="flex items-center justify-between text-xs py-1.5 border-b border-slate-700/30">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-2 h-2 rounded-full" style="background-color: ${stockColor}"></div>
-                                    <span class="font-bold text-slate-300 font-num">${a.symbol}</span>
-                                </div>
-                                <span class="text-slate-400 font-medium">${noteText}</span>
-                            </div>
-                        `;
-                    }
-                });
-
                 if(groupTotal > 0) {
                     masterLabels.push(conf.title);
                     masterData.push(groupTotal);
                     masterColors.push(getItemColor(i)); 
+                    grandTotal += groupTotal;
                 }
-
-                const totalWan = (groupTotal / 10000).toFixed(1);
-                let groupYield = groupCostBasis > 0 ? (groupAnnualDiv / groupCostBasis * 100).toFixed(2) : '0.00';
-                const headerColorStyle = `color: ${getItemColor(i)}`;
-                let headerHtml = isEditMode 
-                    ? `<input type="text" onchange="chartConfigs[${i}].title=this.value;render()" value="${conf.title}" class="title-input font-black text-center w-full mb-1 text-xl" style="font-family:'Noto Sans TC'; ${headerColorStyle}">`
-                    : `<h3 class="font-black text-center w-full mb-1 text-xl tracking-wide" style="font-family:'Noto Sans TC'; ${headerColorStyle}">${conf.title}</h3>`;
-
-                chartsHTML += `
-                    <div class="chart-box" id="chart-box-${i}">
-                        <div class="btn-toolbar-group screenshot-hide">
-                            <button onclick="toggleChartLabelPos(${i})" class="btn-icon w-8 h-8 rounded-full font-bold text-lg" title="切換位置：內/外">◐</button>
-                            <button onclick="downloadChart(${i})" class="btn-icon w-8 h-8 rounded-full" title="另開高畫質圖檔">📷</button>
-                        </div>
-                        <button onclick="deleteChart(${i})" class="screenshot-hide btn-delete-pos btn-icon w-8 h-8 rounded-full flex items-center justify-center text-sm" title="刪除分組">✕</button>
-
-                        ${headerHtml}
-                        <div class="text-center text-slate-500 text-xs mb-2 font-mono tracking-wider font-medium">
-                            市值：<span class="text-emerald-400 font-black text-base font-num">${totalWan}</span> 萬
-                        </div>
-                        <div class="flex justify-center gap-3 mb-3">
-                            <div class="px-3 py-2 bg-slate-800/50 rounded border border-slate-700/30">
-                                <span class="text-slate-400 block text-xs mb-1">預估年息</span>
-                                <span class="text-yellow-400 font-black text-xl font-num">$${Math.round(groupAnnualDiv).toLocaleString()}</span>
-                            </div>
-                             <div class="px-3 py-2 bg-slate-800/50 rounded border border-slate-700/30">
-                                <span class="text-slate-400 block text-xs mb-1">殖利率</span>
-                                <span class="text-rose-400 font-black text-xl font-num">${groupYield}%</span>
-                            </div>
-                        </div>
-                        
-                        <div class="chart-container" title="點擊圖表切換 代號/中文"><canvas id="canvas-${i}"></canvas></div>
-                        
-                        <div class="show-in-view-mode mt-4 px-2 bg-slate-800/20 rounded-lg">
-                            ${legendItems || '<div class="text-xs text-slate-600 text-center py-2">無資料</div>'}
-                        </div>
-                    </div>`;
             });
 
-            document.getElementById('chartsWrapper').innerHTML = chartsHTML;
-
-            // 繪製 Master Chart
+            document.getElementById('grandTotal').innerText = (grandTotal / 10000).toFixed(1);
+            
             const masterWrapper = document.getElementById('masterChartWrapper');
             if(grandTotal > 0) {
                 masterWrapper.classList.remove('hidden');
                 const ctxM = document.getElementById('masterCanvas').getContext('2d');
+                
                 masterChartInstance = new Chart(ctxM, {
                     type: 'pie',
                     data: { labels: masterLabels, datasets: [{ data: masterData, backgroundColor: masterColors, borderWidth: 2, borderColor: chartBorderColor }]},
                     options: {
-                        devicePixelRatio: 3, responsive: true, maintainAspectRatio: false, 
+                        devicePixelRatio: 3,
+                        responsive: true, maintainAspectRatio: false, 
                         radius: isMobile ? '50%' : '90%', 
-                        layout: { padding: (masterLabelPos === 'outside') ? { top: 50, bottom: 20, left: 20, right: 20 } : { top: 50, bottom: 20, left: 20, right: 20 } },
+                        layout: { 
+                            // 強制 padding，確保有空間
+                            padding: { top: 50, bottom: 20, left: 20, right: 20 }
+                        },
                         plugins: {
-                            legend: { display: (masterLabelPos === 'inside'), position: 'bottom', labels: { color: textColor, font: { size: 12, family: '"Noto Sans TC", sans-serif' }, padding: 15 } },
-                            datalabels: { display: (masterLabelPos === 'inside'), color: (ctx) => '#ffffff', textAlign: 'center', font: { weight: 'bold', size: 13, family: '"Noto Sans TC", sans-serif' }, formatter: (val, ctx) => ((val / grandTotal) * 100).toFixed(1) + '%' }
+                            legend: { display: false }, // Master 也不顯示外圍 Legend，保持乾淨
+                            datalabels: { 
+                                display: true, // Master 強制顯示
+                                color: (ctx) => '#ffffff', 
+                                textAlign: 'center',
+                                font: { weight: 'bold', size: 13 },
+                                formatter: (val, ctx) => {
+                                    const percent = ((val / grandTotal) * 100).toFixed(1) + '%';
+                                    return ctx.chart.data.labels[ctx.dataIndex] + '\n' + percent;
+                                }
+                            }
                         }
-                    },
-                    plugins: (masterLabelPos === 'outside') ? [techLabelsPlugin] : []
+                    }
                 });
             } else {
                 masterWrapper.classList.add('hidden');
             }
 
-            updateCharts();
-            renderAssetList();
-        }
+            const wrapper = document.getElementById('chartsWrapper');
+            wrapper.innerHTML = '';
+            chartConfigs.forEach((conf, i) => {
+                const noteItems = conf.selectedIds.map(sid => myAssets.find(a => a.id == sid)).filter(a => a && a.note);
+                // 對照表顯示：顏色點 + 代號 + 備註
+                let notesHtml = noteItems.map(a => {
+                    const color = getItemColor(myAssets.findIndex(ma => ma.id === a.id));
+                    return `<div class="flex items-center gap-2 mb-1">
+                                <div style="width:8px;height:8px;border-radius:50%;background:${color}"></div>
+                                <span class="font-bold text-white">${a.symbol}</span>
+                                <span class="text-slate-400 text-xs">${a.note}</span>
+                            </div>`;
+                }).join('');
 
-        function renderAssetList() {
+                let totalCost = 0;
+                conf.selectedIds.forEach(sid => {
+                    const a = myAssets.find(item => item.id == sid);
+                    if (a) {
+                        const cost = (a.avgPrice * a.shares * 1000) - (a.divRec || 0) - (a.gainRec || 0);
+                        totalCost += cost;
+                    }
+                });
+                const totalWan = (totalCost / 10000).toFixed(1);
+
+                wrapper.innerHTML += `
+                    <div class="chart-box" id="chart-box-${i}">
+                        <input type="text" onchange="chartConfigs[${i}].title=this.value;render()" value="${conf.title}" class="bg-transparent border-none font-bold text-blue-400 text-center w-full mb-1 text-lg">
+                        <div class="text-center text-slate-500 text-xs mb-2 font-mono tracking-wider">
+                            市值：<span class="text-emerald-400 font-black text-base">${totalWan}</span> 萬
+                        </div>
+                        
+                        <button onclick="downloadChart(${i})" class="screenshot-hide absolute top-3 right-2 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center" title="另開高畫質圖檔">📷</button>
+                        <button onclick="deleteChart(${i})" class="screenshot-hide absolute top-3 left-3 btn-icon transition-colors rounded-full w-8 h-8 flex items-center justify-center" title="刪除分組">✕</button>
+                        
+                        <div class="chart-container" onclick="toggleChartLabelContent(${i})" title="點擊圖表切換顯示代號/中文">
+                            <canvas id="canvas-${i}"></canvas>
+                        </div>
+                        
+                        <div class="note-legend text-left px-4">
+                            ${notesHtml || '<div class="text-center opacity-20">無備註</div>'}
+                        </div>
+                    </div>`;
+            });
+            
             const body = document.getElementById('mainTable');
-            let listHTML = '';
+            body.innerHTML = '';
             myAssets.forEach((item, index) => {
                 const stockColor = getItemColor(index);
                 let btns = '';
                 chartConfigs.forEach((c, ci) => {
                     const active = c.selectedIds.includes(parseInt(item.id));
                     const style = active ? `background:${stockColor}; border-color:${stockColor}; color:white;` : `background:var(--row-border); border-color:var(--border-color); color:var(--text-sub);`;
-                    btns += `<div onclick="event.stopPropagation(); toggleToChart(${item.id}, ${ci})" style="${style}" class="num-dot font-medium">${ci+1}</div>`;
+                    btns += `<div onclick="event.stopPropagation(); toggleToChart(${item.id}, ${ci})" style="${style}" class="num-dot">${ci+1}</div>`;
                 });
 
-                const freq = parseInt(item.divFreq) || 0;
-                const amt = parseFloat(item.divAmt) || 0;
-                const shares = parseFloat(item.shares) || 0;
-                const avgPrice = parseFloat(item.avgPrice) || 0;
-                const divRec = parseFloat(item.divRec) || 0;
-                const gainRec = parseFloat(item.gainRec) || 0;
-                const currentPrice = parseFloat(item.currentPrice) || 0;
-                
-                const totalCost = shares * 1000 * avgPrice;
-                const netCostValue = totalCost - divRec - gainRec; 
-                const netCostPerShare = shares > 0 ? (netCostValue / (shares * 1000)) : 0; 
-                
-                let plHtml = '';
-                if(currentPrice > 0 && shares > 0) {
-                    const unrealizedPL = (currentPrice - netCostPerShare) * shares * 1000;
-                    const plClass = unrealizedPL >= 0 ? 'text-gain' : 'text-loss';
-                    const plSign = unrealizedPL >= 0 ? '+' : '';
-                    
-                    plHtml = `
-                        <div class="flex justify-between items-center text-xs mt-2 border-t border-slate-700/50 pt-1.5">
-                            <span class="text-slate-400">現價 <span class="text-white font-bold ml-1 font-num">${currentPrice}</span></span>
-                            <span class="text-slate-400" title="淨成本 = (總成本 - 領息 - 獲利) / 股數">淨本 <span class="text-slate-200 font-bold ml-1 font-num">${netCostPerShare.toFixed(2)}</span></span>
-                            <span class="${plClass} font-bold ml-2 text-sm font-num">${plSign}${(unrealizedPL/10000).toFixed(2)}萬</span>
-                        </div>
-                    `;
-                } else {
-                     plHtml = `
-                        <div class="flex justify-between items-center text-xs mt-2 border-t border-slate-700/50 pt-1.5">
-                            <span class="text-slate-500">等待更新股價...</span>
-                        </div>
-                    `;
-                }
-
-                let estAnnual = 0;
-                if (freq > 0 && amt > 0 && shares > 0) {
-                    estAnnual = shares * 1000 * amt * freq;
-                }
-
-                const displayName = item.note ? `${item.symbol} ${item.note}` : item.symbol;
-
-                listHTML += `
+                body.innerHTML += `
                     <div class="compact-row" data-id="${item.id}">
                         <div class="drag-handle">☰</div>
                         <div class="w-1.5 h-7 rounded-full mr-3" style="background:${stockColor}"></div>
-                        <div class="flex-1 text-sm min-w-[140px]">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <span class="font-bold text-[15px] tracking-wide text-white">${item.symbol}</span>
-                                    ${item.note ? `<span class="stock-name-display">${item.note}</span>` : ''}
-                                    <span class="text-slate-500 text-xs ml-2 font-medium font-num">${item.shares}張</span>
-                                </div>
-                                <span class="text-[10px] text-yellow-500 bg-yellow-900/20 px-1.5 py-0.5 rounded font-medium ml-2 whitespace-nowrap font-num">息 $${Math.round(estAnnual).toLocaleString()}</span>
-                            </div>
-                            ${plHtml}
+                        <div class="flex-1 text-sm">
+                            <span class="font-bold">${item.symbol}</span>
+                            <span class="text-slate-500 text-xs ml-2">${item.shares}張</span>
                         </div>
                         <div class="flex gap-1 ml-2">${btns}</div>
                         <div class="flex gap-4 ml-4">
@@ -695,12 +345,13 @@
                         </div>
                     </div>`;
             });
-            body.innerHTML = listHTML;
             if(isSortMode) initSortable();
+            updateCharts();
         }
 
         function updateCharts() {
             const chartBorderColor = getThemeColor('--chart-border');
+            const isMobile = window.innerWidth < 480; 
             chartConfigs.forEach((conf, i) => {
                 const canvas = document.getElementById(`canvas-${i}`);
                 if(!canvas) return;
@@ -713,40 +364,48 @@
                         const netCost = (s.avgPrice * s.shares * 1000) - (s.divRec || 0) - (s.gainRec || 0);
                         dData.push(netCost > 0 ? netCost : 1);
                         
+                        // --- 核心修改：依據設定顯示 文字 ---
                         let labelText = s.symbol;
-                        // 判定顯示文字：如果是 note 模式且有填寫 note，就顯示中文
+                        // 如果該圖表設定為 note 模式且有填寫 note
                         if (conf.labelContent === 'note' && s.note) {
                             labelText = s.note;
                         }
-                        
                         dLabels.push(labelText);
+                        
                         dShares.push(s.shares); 
                         dColors.push(getItemColor(idx)); 
                         dFontSizes.push(s.fontSize || 12);
                     }
                 });
                 
-                const currentPos = conf.labelPos || 'inside'; 
-                
                 chartInstances[i] = new Chart(ctx, {
                     type: 'pie',
                     data: { labels: dLabels, datasets: [{ data: dData, backgroundColor: dColors, borderWidth: 1, borderColor: chartBorderColor }]},
                     options: {
-                        // 重要：綁定 Chart.js 的 onClick，使用箭頭函式傳遞索引 i
-                        onClick: (e) => { 
-                            toggleChartLabelContent(i);
-                        },
+                        // 移除 Chart.js 預設的 onClick，避免干擾外層 div 的點擊
+                        onClick: null, 
                         devicePixelRatio: 3, responsive: true, maintainAspectRatio: false, 
                         radius: isMobile ? '50%' : '90%', 
-                        layout: { padding: (currentPos === 'outside') ? (window.innerWidth < 480 ? 60 : 40) : 20 },
+                        layout: { 
+                            // 強制 padding，避免文字被切掉
+                            padding: { top: 30, bottom: 20, left: 20, right: 20 }
+                        },
                         plugins: {
-                            legend: { display: false },
+                            legend: { display: false }, // 強制不顯示周圍標籤
                             datalabels: {
-                                color: (ctx) => '#ffffff', textAlign: 'center', display: true, anchor: currentPos === 'outside' ? 'end' : 'center', align: currentPos === 'outside' ? 'end' : 'center', offset: currentPos === 'outside' ? 4 : 0, font: (ctx) => ({ weight: 'bold', size: dFontSizes[ctx.dataIndex], family: '"Noto Sans TC", sans-serif' }), formatter: (val, ctx) => ctx.chart.data.labels[ctx.dataIndex] + '\n' + dShares[ctx.dataIndex] + '張'
+                                // 強制顯示在內部 (Inside)
+                                color: (ctx) => '#ffffff', 
+                                textAlign: 'center', 
+                                display: true, 
+                                anchor: 'center', 
+                                align: 'center', 
+                                offset: 0, 
+                                font: (ctx) => ({ weight: 'bold', size: dFontSizes[ctx.dataIndex] }), 
+                                formatter: (val, ctx) => ctx.chart.data.labels[ctx.dataIndex] + '\n' + dShares[ctx.dataIndex] + '張'
                             }
                         }
                     },
-                    plugins: (masterLabelPos === 'outside') ? [techLabelsPlugin] : []
+                    plugins: [] // 不使用 techLabelsPlugin (移除外部引導線)
                 });
             });
         }
@@ -763,7 +422,6 @@
         }
 
         function toggleMasterLabelPos() { masterLabelPos = (masterLabelPos === 'outside') ? 'inside' : 'outside'; render(); }
-        function toggleChartLabelPos(index) { const current = chartConfigs[index].labelPos || 'outside'; chartConfigs[index].labelPos = (current === 'outside') ? 'inside' : 'outside'; render(); }
         function downloadMasterChart() { const el = document.getElementById('masterChartBox'); const total = document.getElementById('grandTotal').innerText; captureAndOpenImage(el, `資產總覽_總值${total}萬`); }
         function downloadChart(index) { const el = document.getElementById(`chart-box-${index}`); const title = chartConfigs[index].title || 'chart'; const val = (el.innerText.match(/市值：([\d\.]+) 萬/) || [])[1] || ''; captureAndOpenImage(el, `${title}_市值${val}萬`); }
 
@@ -773,13 +431,15 @@
                 html2canvas(element, { scale: 5, backgroundColor: getThemeColor('--bg-card'), useCORS: true, logging: false, allowTaint: true, onclone: (clonedDoc) => { const clonedEl = clonedDoc.getElementById(element.id); if(clonedEl) clonedEl.style.transform = 'none'; } }).then(canvas => {
                     loading.style.display = 'none'; element.classList.remove('capturing'); element.style.backgroundColor = originalBg; 
                     const jpgUrl = canvas.toDataURL('image/jpeg', 1.0); const newWin = window.open('', '_blank');
-                    if (newWin) { newWin.document.write(`<html><head><title>${fileName}</title><style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background-color:#111}img{max-width:95%;height:auto;box-shadow:0 0 20px rgba(0,0,0,0.5);border-radius:12px}.tip{position:fixed;top:10px;left:50%;transform:translateX(-50%);color:#fff;background:rgba(0,0,0,0.7);padding:8px 16px;border-radius:20px;font-family:sans-serif;font-size:14px}</style></head><body><div class="tip">請長按圖片或右鍵另存</div><img src="${jpgUrl}"></body></html>`); newWin.document.close(); } else { alert('請允許彈出視窗'); }
+                    if (newWin) { newWin.document.write(`<html><head><title>${fileName}</title><style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background-color:#111}img{max-width:95%;height:auto;box-shadow:0 0 20px rgba(0,0,0,0.5);border-radius:12px}.tip{position:fixed;top:10px;left:50%;transform:translateX(-50%);color:#fff;background:rgba(0,0,0,0.7);padding:8px 16px;border-radius:20px;font-family:sans-serif;font-size:14px}</style></head><body><div class="tip">請長按圖片另存新檔</div><img src="${jpgUrl}"></body></html>`); newWin.document.close(); } else { alert('請允許彈出視窗'); }
                 }).catch(err => { console.error(err); loading.style.display = 'none'; element.classList.remove('capturing'); element.style.backgroundColor = originalBg; alert("失敗"); });
             }, 100);
         }
 
+        // 保留原有的 Prompt 還原方式，確保相容性
         function copyToClipboard() { const d = btoa(encodeURIComponent(JSON.stringify({myAssets, chartConfigs}))); const textArea = document.createElement("textarea"); textArea.value = d; textArea.style.position = "fixed"; textArea.style.left = "-9999px"; textArea.style.top = "0"; document.body.appendChild(textArea); textArea.focus(); textArea.select(); try { const successful = document.execCommand('copy'); if ( successful) alert("備份已複製！"); else prompt("複製失敗，請手動複製代碼：", d); } catch (err) { console.error('Fallback', err); prompt("複製失敗，請手動複製代碼：", d); } document.body.removeChild(textArea); }
         function importFromText() { const c = prompt("代碼："); if(c) { try { const d = JSON.parse(decodeURIComponent(atob(c))); myAssets=d.myAssets; chartConfigs=d.chartConfigs; render(); } catch(e){ alert("錯誤"); } } }
+        
         function toggleSortMode() { isSortMode = !isSortMode; const btn = document.getElementById('sortToggle'); const table = document.getElementById('mainTable'); if(isSortMode) { btn.innerText = "✓ 鎖定順序"; table.classList.add('sort-mode-active'); initSortable(); } else { btn.innerText = "⇅ 排序模式"; table.classList.remove('sort-mode-active'); if (sortable) sortable.destroy(); } }
         function initSortable() { const el = document.getElementById('mainTable'); if (sortable) sortable.destroy(); sortable = Sortable.create(el, { handle: '.drag-handle', animation: 200, onEnd: () => { const newOrder = Array.from(el.querySelectorAll('.compact-row')).map(r => parseInt(r.dataset.id)); myAssets = newOrder.map(id => myAssets.find(a => a.id === id)); render(); } }); }
         
@@ -801,7 +461,7 @@
             document.getElementById('inputArea').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
-        function addNewChart() { const t = prompt("組別名稱："); if (t) { chartConfigs.push({ id: Date.now(), title: t, selectedIds: [], labelPos: 'outside' }); render(); } }
+        function addNewChart() { const t = prompt("組別名稱："); if (t) { chartConfigs.push({ id: Date.now(), title: t, selectedIds: [], labelPos: 'inside' }); render(); } }
         function deleteChart(idx) { if (confirm("刪除？")) { chartConfigs.splice(idx, 1); render(); } }
         function deleteItem(id) { if(confirm("刪除？")) { myAssets = myAssets.filter(i => i.id !== id); render(); } }
         
@@ -809,4 +469,3 @@
     </script>
 </body>
 </html>
-
